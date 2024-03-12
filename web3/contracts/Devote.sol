@@ -25,7 +25,8 @@ contract DecentralizedVoting {
         InstanceStatus status;
         mapping(uint256 => Candidate) candidates;
         uint256 candidateCount;
-        mapping(address => bool) hasVoted;
+        address[] voters;
+        mapping(address => string[]) votedRoles;
         uint256 startTime;
         uint256 endTime;
         bool exists;
@@ -260,25 +261,36 @@ contract DecentralizedVoting {
         require(_instanceId <= instanceId, "Invalid instance ID");
         VotingInstance storage instance = instances[_instanceId];
 
-        // Check if the voting is over
+        // Check if the voting has ended
         if (block.timestamp >= instance.endTime) {
             instance.status = InstanceStatus.Closed;
         }
-
-        require(
-            instance.status == InstanceStatus.Ongoing,
-            "Voting has not started for this instance or instance is closed"
-        );
-        require(
-            !instance.hasVoted[msg.sender],
-            "You have already voted in this instance"
-        );
+        require(instance.status == InstanceStatus.Ongoing, "Voting not active");
 
         Candidate storage candidate = instance.candidates[_candidateId];
         require(candidate.id > 0, "Invalid candidate ID");
 
+        bool alreadyVotedForRole = false;
+        // Check if the voter has already voted for this role
+        for (uint i = 0; i < instance.votedRoles[msg.sender].length; i++) {
+            if (
+                keccak256(bytes(instance.votedRoles[msg.sender][i])) ==
+                keccak256(bytes(candidate.role))
+            ) {
+                alreadyVotedForRole = true;
+                break; // Already voted for this role
+            }
+        }
+        require(!alreadyVotedForRole, "Already voted for this role");
+
+        // Add voter to voters array if they're not already in it
+        if (instance.votedRoles[msg.sender].length == 0) {
+            instance.voters.push(msg.sender);
+        }
+
         candidate.voteCount++;
-        instance.hasVoted[msg.sender] = true;
+        instance.votedRoles[msg.sender].push(candidate.role); // Record the role voted for
+
         emit VoteCasted(_instanceId, _candidateId, msg.sender);
     }
 
@@ -433,6 +445,32 @@ contract DecentralizedVoting {
 
     function instanceExists(uint256 _instanceId) public view returns (bool) {
         return instances[_instanceId].exists;
+    }
+
+    function getVotersAndRoles(
+        uint256 _instanceId
+    ) public view returns (address[] memory, string[][] memory) {
+        require(_instanceId <= instanceId, "Invalid instance ID");
+        VotingInstance storage instance = instances[_instanceId];
+
+        string[][] memory rolesVotedFor = new string[][](
+            instance.voters.length
+        );
+        for (uint i = 0; i < instance.voters.length; i++) {
+            rolesVotedFor[i] = instance.votedRoles[instance.voters[i]];
+        }
+
+        return (instance.voters, rolesVotedFor);
+    }
+
+    function getVoterRoles(
+        uint256 _instanceId,
+        address voter
+    ) public view returns (string[] memory) {
+        require(_instanceId <= instanceId, "Invalid instance ID");
+        VotingInstance storage instance = instances[_instanceId];
+
+        return instance.votedRoles[voter];
     }
 
     function getInstanceStatus(
