@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CustomButton, FormField, Loader } from "../components";
+import { CustomButton, FormField, Loader, VotersInput } from "../components";
 import { useStateContext } from "../context";
 
 const CreateInstance = () => {
@@ -64,6 +64,13 @@ const CreateInstance = () => {
       console.error(error);
       setIsLoading(false);
     }
+  };
+
+  // Function to handle voters added, potentially sending OTPs here
+  const handleVotersAdded = (emails) => {
+    console.log("Voters added:", emails);
+    // Here you'd typically handle the voters, such as by calling an API to register them
+    navigate("/profile"); // Redirect after voters are added
   };
 
   return (
@@ -169,6 +176,10 @@ const CreateInstance = () => {
           </div>
         </form>
       )}
+
+      <div>
+        <VotersInput onVotersAdded={handleVotersAdded} />
+      </div>
     </div>
   );
 };
