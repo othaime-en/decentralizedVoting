@@ -8,6 +8,7 @@ import {
   CreateCampaign,
   Home,
   Profile,
+  Analytics,
 } from "./pages";
 
 const App = () => {
@@ -26,6 +27,7 @@ const App = () => {
           <Route path="/create-campaign" element={<CreateCampaign />} />
           <Route path="/create-instance" element={<CreateInstance />} />
           <Route path="/instance-details/:id" element={<CampaignDetails />} />
+          <Route path="/analytics" element={<Analytics />} />
         </Routes>
       </div>
     </div>

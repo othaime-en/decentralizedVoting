@@ -8,3 +8,5 @@ export { default as CountBox } from "./CountBox";
 export { default as Loader } from "./Loader";
 export { default as OTPInput } from "./OTPInput";
 export { default as ResultsModal } from "./ResultsModal";
+export { default as VotersInput } from "./VotersInput";
+export { default as DataTable } from "./DataTable";
