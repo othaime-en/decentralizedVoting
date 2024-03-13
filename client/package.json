@@ -11,8 +11,12 @@
   "dependencies": {
     "@thirdweb-dev/react": "^4",
     "@thirdweb-dev/sdk": "^4",
+    "chart.js": "^4.4.2",
     "ethers": "^5",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.8.2",
     "react": "^18.2",
+    "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2",
     "react-router-dom": "^6.22.2",
     "react-table": "^7.8.0",

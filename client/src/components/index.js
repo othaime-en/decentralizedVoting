@@ -10,3 +10,6 @@ export { default as OTPInput } from "./OTPInput";
 export { default as ResultsModal } from "./ResultsModal";
 export { default as VotersInput } from "./VotersInput";
 export { default as DataTable } from "./DataTable";
+export { default as PDFDownloadButton } from "./PDFDownloadButton";
+export { default as PieChartComponent } from "./PieChartComponent";
+export { default as BarChartComponent } from "./BarChartComponent";

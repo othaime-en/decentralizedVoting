@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useTable, useSortBy, useFilters, usePagination } from "react-table";
 
 import { getStatusColor } from "../utils";
+import PDFDownloadButton from "./PDFDownloadButton";
 
 const DataTable = ({ columns, data }) => {
   const [titleFilter, setTitleFilter] = useState("");
@@ -183,6 +184,11 @@ const DataTable = ({ columns, data }) => {
               </option>
             ))}
           </select>
+          <PDFDownloadButton
+            data={data}
+            columns={columns}
+            title="Your Table Title"
+          />
         </div>
       </div>
     </>
