@@ -13,3 +13,4 @@ export { default as DataTable } from "./DataTable";
 export { default as PDFDownloadButton } from "./PDFDownloadButton";
 export { default as PieChartComponent } from "./PieChartComponent";
 export { default as BarChartComponent } from "./BarChartComponent";
+export { default as DisplayUserInstances } from "./DisplayUserInstances";

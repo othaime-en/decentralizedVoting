@@ -179,6 +179,27 @@ export const StateContextProvider = ({ children }) => {
     ]);
   };
 
+  const startVoting = async (instanceId, duration) => {
+    try {
+      const data = await contract.call("startVoting", [instanceId, duration]);
+      console.log("Voting started successfully!");
+    } catch (error) {
+      console.error("There was an error initializing your instance");
+    }
+  };
+
+  const extendVoting = async (instanceId, duration) => {
+    try {
+      const data = await contract.call("extendVoting", [instanceId, duration]);
+      console.log("Voting time extended successfully");
+    } catch (error) {
+      console.error(
+        "You have encountered an error while extending the deadline: ",
+        error
+      );
+    }
+  };
+
   return (
     <StateContext.Provider
       value={{
@@ -192,6 +213,8 @@ export const StateContextProvider = ({ children }) => {
         getUserInstances,
         getCandidates,
         vote,
+        startVoting,
+        extendVoting,
       }}
     >
       {children}
