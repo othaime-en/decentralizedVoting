@@ -38,6 +38,14 @@ export const StateContextProvider = ({ children }) => {
     contract,
     "updateCandidate"
   );
+  const { mutateAsync: closeInstance } = useContractWrite(
+    contract,
+    "closeInstance"
+  );
+  const { mutateAsync: deleteInstance } = useContractWrite(
+    contract,
+    "deleteInstance"
+  );
 
   const address = useAddress();
   const connect = useMetamask();
@@ -236,6 +244,24 @@ export const StateContextProvider = ({ children }) => {
     }
   };
 
+  const endVoting = async (instanceId) => {
+    try {
+      const data = await closeInstance({ args: [instanceId] });
+      console.log("Voting closed successfully!");
+    } catch (error) {
+      console.error("There was an error closing your instance");
+    }
+  };
+
+  const deleteVotingInstance = async (instanceId) => {
+    try {
+      const data = await deleteInstance({ args: [instanceId] });
+      console.log("Voting instance deleted successfully!");
+    } catch (error) {
+      console.error("There was an error deleting your instance");
+    }
+  };
+
   return (
     <StateContext.Provider
       value={{
@@ -253,6 +279,8 @@ export const StateContextProvider = ({ children }) => {
         extendVoting,
         deleteCandidate,
         updateYourCandidate,
+        endVoting,
+        deleteVotingInstance,
       }}
     >
       {children}

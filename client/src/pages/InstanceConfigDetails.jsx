@@ -34,6 +34,8 @@ const InstanceConfigDetails = () => {
     addCandidates,
     updateYourCandidate,
     deleteCandidate,
+    endVoting,
+    deleteVotingInstance,
   } = useStateContext();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -55,13 +57,6 @@ const InstanceConfigDetails = () => {
   const openUpdateModal = (candidate) => {
     setSelectedCandidate(candidate);
     setIsUpdateModalOpen(true);
-  };
-
-  const handleUpdatesCandidate = (updatedCandidate) => {
-    // Perform the update operation here, likely involving an API call or state update
-    console.log("Updated Candidate:", updatedCandidate);
-    // Close the modal and possibly refresh the candidate list
-    setIsUpdateModalOpen(false);
   };
 
   const openAddCandidateModal = () => setIsAddCandidateModalOpen(true);
@@ -143,6 +138,29 @@ const InstanceConfigDetails = () => {
       extendVoting(state.instanceId, duration);
     }
     // No action for 'Ended' as the button will be disabled
+  };
+
+  const handleEndVoting = async () => {
+    setIsLoading(true);
+    try {
+      await endVoting(state.instanceId);
+      setIsLoading(false);
+    } catch (error) {
+      console.error(error);
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteInstance = async () => {
+    setIsLoading(true);
+    try {
+      await deleteVotingInstance(state.instanceId);
+      setIsLoading(false);
+      navigate("/profile");
+    } catch (error) {
+      console.error(error);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -434,6 +452,33 @@ const InstanceConfigDetails = () => {
                 onClose={() => setIsUpdateModalOpen(false)}
                 candidate={selectedCandidate}
                 onUpdate={handleUpdateCandidate}
+              />
+            </div>
+          </div>
+          <div className="mt-[20px] flex flex-col p-4 bg-[#1c1c24] rounded-[10px]">
+            <div className="mt-[20px]">
+              <div className="my-[10px] p-4 bg-[#13131a] rounded-[10px]">
+                <h4 className="font-epilogue font-semibold text-[14px] leading-[22px] text-white">
+                  Danger Zone!!!
+                </h4>
+                <p className="mt-[20px] font-epilogue font-normal leading-[22px] text-[#808191]">
+                  If you wish to end the voting for this instance prematurely or
+                  delete the instance entirely, you can do so here.
+                </p>
+              </div>
+
+              {/* Add mb-4 (margin-bottom) to the first button for spacing */}
+              <CustomButton
+                btnType="button"
+                title="End Voting for this instance"
+                styles="w-full bg-[red] mb-4" // Added mb-4 here for spacing
+                handleClick={handleEndVoting}
+              />
+              <CustomButton
+                btnType="button"
+                title="Delete This Instance"
+                styles="w-full bg-[red]"
+                handleClick={handleDeleteInstance}
               />
             </div>
           </div>
