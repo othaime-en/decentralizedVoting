@@ -7,8 +7,8 @@ import {
   CountBox,
   CustomButton,
   Loader,
-  OTPInput,
-  PieChartComponent,
+  PieChartCandidate,
+  FormField,
 } from "../components";
 import { hoursLeft } from "../utils";
 
@@ -31,7 +31,9 @@ const InstanceConfigDetails = () => {
     vote,
     startVoting,
     extendVoting,
-    addCandidate,
+    addCandidates,
+    updateYourCandidate,
+    deleteCandidate,
   } = useStateContext();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -41,6 +43,40 @@ const InstanceConfigDetails = () => {
   const [duration, setDuration] = useState("");
   const [durationUnit, setDurationUnit] = useState("hours");
   const remainingHours = hoursLeft(state.endTime);
+  const [isAddCandidateModalOpen, setIsAddCandidateModalOpen] = useState(false);
+  const [newCandidates, setNewCandidates] = useState([
+    { name: "", role: "", description: "" },
+  ]);
+
+  const openAddCandidateModal = () => setIsAddCandidateModalOpen(true);
+  const closeAddCandidateModal = () => setIsAddCandidateModalOpen(false);
+
+  const handleCandidateFieldChange = (field, event, index) => {
+    const updatedCandidates = [...newCandidates];
+    updatedCandidates[index] = {
+      ...updatedCandidates[index],
+      [field]: event.target.value,
+    };
+    setNewCandidates(updatedCandidates);
+  };
+  const handleSubmitCandidates = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      await addCandidates(state.instanceId, candidates);
+      setIsLoading(false);
+      navigate("/profile"); // Or navigate to a confirmation/success page
+    } catch (error) {
+      console.error(error);
+      setIsLoading(false);
+    }
+  };
+  const addNewCandidateField = () => {
+    setNewCandidates([
+      ...newCandidates,
+      { name: "", role: "", description: "" },
+    ]);
+  };
 
   const fetchCandidates = async () => {
     const data = await getCandidates(state.instanceId);
@@ -56,6 +92,30 @@ const InstanceConfigDetails = () => {
     setIsModalOpen(true);
     const fetchedResults = await getCandidates(state.instanceId);
     setResults(fetchedResults);
+  };
+
+  const handleUpdateCandidate = async () => {
+    setIsLoading(true);
+    try {
+      await updateYourCandidate(state.instanceId, candidates.candidateId);
+      fetchCandidates();
+      setIsLoading(false);
+    } catch (error) {
+      console.error(error);
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteCandidate = async () => {
+    setIsLoading(true);
+    try {
+      await deleteCandidate(state.instanceId, candidates.candidateId);
+      fetchCandidates();
+      setIsLoading(false);
+    } catch (error) {
+      console.error(error);
+      setIsLoading(false);
+    }
   };
 
   const handleActionBasedOnStatus = () => {
@@ -107,12 +167,75 @@ const InstanceConfigDetails = () => {
             <h4 className="font-epilogue font-semibold text-[18px] text-white uppercase">
               Candidates
             </h4>
-            <button
-              // onClick={() => toggleAddCandidateModal(true)}
-              className="py-2 px-4 bg-[#4caf50] text-white rounded-[10px] hover:bg-[#43a047]"
-            >
-              Add Candidates
-            </button>
+            <CustomButton
+              btnType="button"
+              title="Add Candidates"
+              styles="py-2 px-4 bg-[#4caf50] text-white rounded-[10px] hover:bg-[#43a047]"
+              handleClick={openAddCandidateModal}
+            />
+
+            {/* Modal implementation */}
+            {isAddCandidateModalOpen && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                <div className="bg-[#1c1c24] p-5 rounded-lg max-w-lg w-full">
+                  <form
+                    onSubmit={handleSubmitCandidates}
+                    className="w-full flex flex-col gap-4"
+                  >
+                    <div className="w-full bg-[#8c6dfd] text-white text-center py-2 rounded-t-lg">
+                      <h2 className="font-epilogue font-bold">
+                        Add Candidate Details
+                      </h2>
+                    </div>
+                    {newCandidates.map((candidate, index) => (
+                      <div key={index} className="flex flex-col gap-4">
+                        <FormField
+                          labelName="Candidate Name *"
+                          placeholder="Candidate Name"
+                          inputType="text"
+                          value={candidate.name}
+                          handleChange={(e) =>
+                            handleCandidateFieldChange("name", e, index)
+                          }
+                        />
+                        <FormField
+                          labelName="Candidate Role *"
+                          placeholder="Candidate Role"
+                          inputType="text"
+                          value={candidate.role}
+                          handleChange={(e) =>
+                            handleCandidateFieldChange("role", e, index)
+                          }
+                        />
+                        <FormField
+                          labelName="Candidate Description *"
+                          placeholder="Describe the candidate"
+                          isTextArea={true}
+                          value={candidate.description}
+                          handleChange={(e) =>
+                            handleCandidateFieldChange("description", e, index)
+                          }
+                        />
+                      </div>
+                    ))}
+                    <div className="flex justify-between items-center mt-4">
+                      <CustomButton
+                        btnType="submit"
+                        title="Submit Candidate"
+                        styles="bg-[#4caf50]"
+                      />
+                      <button
+                        onClick={closeAddCandidateModal}
+                        className="text-white bg-red-600 hover:bg-red-700 font-bold py-2 px-4 rounded-full"
+                        aria-label="Close Add Candidate Modal"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
 
             <div>
               <div className="mt-[20px] flex flex-col gap-4">
@@ -135,12 +258,22 @@ const InstanceConfigDetails = () => {
                           </p>
                         </div>
                         <div className="flex flex-col gap-2">
-                          <button className="py-2 px-4 bg-[#8c6dfd] text-white rounded-[10px] hover:bg-[#7b5df8]">
-                            Update
-                          </button>
-                          <button className="py-2 px-4 bg-[#df6d6d] text-white rounded-[10px] hover:bg-[#d65d5d]">
-                            Delete
-                          </button>
+                          <CustomButton
+                            btnType="button"
+                            title="Update"
+                            styles="py-1 px-2 bg-[#8c6dfd] text-white rounded-[10px] hover:bg-[#7b5df8]"
+                            handleClick={() =>
+                              handleUpdateCandidate(candidate.candidateId)
+                            }
+                          />
+                          <CustomButton
+                            btnType="button"
+                            title="Delete"
+                            styles="py-1 px-2 bg-[#df6d6d] text-white rounded-[10px] hover:bg-[#d65d5d]"
+                            handleClick={() =>
+                              handleDeleteCandidate(candidate.candidateId)
+                            }
+                          />
                         </div>
                       </div>
                     </div>
@@ -190,7 +323,7 @@ const InstanceConfigDetails = () => {
               style={{ height: "400px", position: "relative" }}
             >
               {/* Assuming 'PieChartComponent' is imported and 'voteByCandidateData' is available */}
-              <PieChartComponent data={candidates} />
+              <PieChartCandidate data={candidates} />
             </div>
           </div>
         </div>

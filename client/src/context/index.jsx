@@ -30,6 +30,14 @@ export const StateContextProvider = ({ children }) => {
     contract,
     "addCandidates"
   );
+  const { mutateAsync: removeCandidate } = useContractWrite(
+    contract,
+    "removeCandidate"
+  );
+  const { mutateAsync: updateCandidate } = useContractWrite(
+    contract,
+    "updateCandidate"
+  );
 
   const address = useAddress();
   const connect = useMetamask();
@@ -173,11 +181,38 @@ export const StateContextProvider = ({ children }) => {
     return tableData;
   };
 
-  const removeCandidate = async (instanceId, candidateId) => {
-    const data = await contract.call("removeCandidate", [
-      instanceId,
-      candidateId,
-    ]);
+  const deleteCandidate = async (instanceId, candidateId) => {
+    try {
+      const data = await removeCandidate({ args: [instanceId, candidateId] });
+      console.info("Contract Call Success!!", data);
+    } catch (err) {
+      console.error("There was an error deleting the candidate", err);
+      throw err;
+    }
+  };
+
+  const updateYourCandidate = async (
+    instanceId,
+    candidateId,
+    newCandidateName,
+    newCandidateRole,
+    newCandidateDescription
+  ) => {
+    try {
+      const data = await updateCandidate({
+        args: [
+          instanceId,
+          candidateId,
+          newCandidateName,
+          newCandidateRole,
+          newCandidateDescription,
+        ],
+      });
+      console.info("Contract Call Success!!", data);
+    } catch (err) {
+      console.error("There was an error updating the candidate", err);
+      throw err;
+    }
   };
 
   const startVoting = async (instanceId, duration) => {
@@ -216,6 +251,8 @@ export const StateContextProvider = ({ children }) => {
         vote,
         startVoting,
         extendVoting,
+        deleteCandidate,
+        updateYourCandidate,
       }}
     >
       {children}
