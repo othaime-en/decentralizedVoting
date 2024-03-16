@@ -28,7 +28,6 @@ const InstanceConfigDetails = () => {
     contract,
     address,
     getCandidates,
-    vote,
     startVoting,
     extendVoting,
     addCandidates,
@@ -59,23 +58,19 @@ const InstanceConfigDetails = () => {
     };
     setNewCandidates(updatedCandidates);
   };
+
   const handleSubmitCandidates = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await addCandidates(state.instanceId, candidates);
+      await addCandidates(state.instanceId, newCandidates);
       setIsLoading(false);
-      navigate("/profile"); // Or navigate to a confirmation/success page
+      closeAddCandidateModal();
+      fetchCandidates();
     } catch (error) {
       console.error(error);
       setIsLoading(false);
     }
-  };
-  const addNewCandidateField = () => {
-    setNewCandidates([
-      ...newCandidates,
-      { name: "", role: "", description: "" },
-    ]);
   };
 
   const fetchCandidates = async () => {
@@ -94,10 +89,10 @@ const InstanceConfigDetails = () => {
     setResults(fetchedResults);
   };
 
-  const handleUpdateCandidate = async () => {
+  const handleUpdateCandidate = async (candidateId) => {
     setIsLoading(true);
     try {
-      await updateYourCandidate(state.instanceId, candidates.candidateId);
+      await updateYourCandidate(state.instanceId, candidateId);
       fetchCandidates();
       setIsLoading(false);
     } catch (error) {
@@ -106,10 +101,10 @@ const InstanceConfigDetails = () => {
     }
   };
 
-  const handleDeleteCandidate = async () => {
+  const handleDeleteCandidate = async (candidateId) => {
     setIsLoading(true);
     try {
-      await deleteCandidate(state.instanceId, candidates.candidateId);
+      await deleteCandidate(state.instanceId, candidateId);
       fetchCandidates();
       setIsLoading(false);
     } catch (error) {
