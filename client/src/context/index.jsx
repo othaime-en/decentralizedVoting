@@ -10,6 +10,7 @@ import {
 } from "@thirdweb-dev/react";
 import { ethers } from "ethers";
 import { EditionMetadataWithOwnerOutputSchema } from "@thirdweb-dev/sdk";
+import { epochToDateTime } from "../utils";
 
 const StateContext = createContext();
 
@@ -96,8 +97,8 @@ export const StateContextProvider = ({ children }) => {
       owner: instance.creator,
       candidateCount: instance.candidateCount.toNumber(),
       instanceStatus: getStatus(instance.status),
-      startTime: instance.startTime.toNumber(),
-      endTime: instance.endTime.toNumber(),
+      startTime: epochToDateTime(instance.startTime.toNumber()),
+      endTime: epochToDateTime(instance.endTime.toNumber()),
       isPrivate: instance.isPrivate.toString(),
     }));
     console.log("Here are the parsed instances: ", parsedInstances);

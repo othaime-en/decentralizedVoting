@@ -50,6 +50,27 @@ export const getStatusColor = (status) => {
   }
 };
 
+export const epochToDateTime = (epochTime) => {
+
+  if (epochTime === 0) return "N/A";
+
+  // Create a Date object using the epoch time
+  const date = new Date(epochTime * 1000); // JavaScript uses milliseconds
+
+  // Format the date and time components
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+
+  // Construct the formatted date and time string
+  const formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+  return formattedDateTime;
+};
+
 export const checkIfImage = (url, callback) => {
   const img = new Image();
   img.src = url;
