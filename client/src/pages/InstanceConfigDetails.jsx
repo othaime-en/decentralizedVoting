@@ -9,6 +9,7 @@ import {
   Loader,
   PieChartCandidate,
   FormField,
+  UpdateCandidateModal,
 } from "../components";
 import { hoursLeft } from "../utils";
 
@@ -46,6 +47,22 @@ const InstanceConfigDetails = () => {
   const [newCandidates, setNewCandidates] = useState([
     { name: "", role: "", description: "" },
   ]);
+
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
+
+  // Function to open update modal with selected candidate details
+  const openUpdateModal = (candidate) => {
+    setSelectedCandidate(candidate);
+    setIsUpdateModalOpen(true);
+  };
+
+  const handleUpdatesCandidate = (updatedCandidate) => {
+    // Perform the update operation here, likely involving an API call or state update
+    console.log("Updated Candidate:", updatedCandidate);
+    // Close the modal and possibly refresh the candidate list
+    setIsUpdateModalOpen(false);
+  };
 
   const openAddCandidateModal = () => setIsAddCandidateModalOpen(true);
   const closeAddCandidateModal = () => setIsAddCandidateModalOpen(false);
@@ -89,10 +106,16 @@ const InstanceConfigDetails = () => {
     setResults(fetchedResults);
   };
 
-  const handleUpdateCandidate = async (candidateId) => {
+  const handleUpdateCandidate = async (updatedCandidate) => {
     setIsLoading(true);
     try {
-      await updateYourCandidate(state.instanceId, candidateId);
+      await updateYourCandidate(
+        state.instanceId,
+        updatedCandidate.candidateId,
+        updatedCandidate.name,
+        updatedCandidate.role,
+        updatedCandidate.description
+      );
       fetchCandidates();
       setIsLoading(false);
     } catch (error) {
@@ -257,9 +280,7 @@ const InstanceConfigDetails = () => {
                             btnType="button"
                             title="Update"
                             styles="py-1 px-2 bg-[#8c6dfd] text-white rounded-[10px] hover:bg-[#7b5df8]"
-                            handleClick={() =>
-                              handleUpdateCandidate(candidate.candidateId)
-                            }
+                            handleClick={() => openUpdateModal(candidate)}
                           />
                           <CustomButton
                             btnType="button"
@@ -407,6 +428,13 @@ const InstanceConfigDetails = () => {
                   instanceName={state.title}
                 />
               </Suspense>
+
+              <UpdateCandidateModal
+                isOpen={isUpdateModalOpen}
+                onClose={() => setIsUpdateModalOpen(false)}
+                candidate={selectedCandidate}
+                onUpdate={handleUpdateCandidate}
+              />
             </div>
           </div>
         </div>
