@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { CustomButton, FormField, Loader, VotersInput } from "../components";
+import { CustomButton, FormField, Loader, StatusModal } from "../components";
+import { generateOTP } from "../utils";
 import { useStateContext } from "../context";
 
 const CreateInstance = () => {
@@ -16,6 +17,96 @@ const CreateInstance = () => {
   const [candidates, setCandidates] = useState([
     { name: "", role: "", description: "" },
   ]);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [modalInfo, setModalInfo] = useState({
+    title: "",
+    message: "",
+    status: "", // 'confirmation', 'error', 'warning'
+  });
+  const [emailInput, setEmailInput] = useState("");
+  const [emails, setEmails] = useState([]);
+  const fileInputRef = useRef(null);
+
+  const showStatusModal = (title, message, status) => {
+    setModalInfo({ title, message, status });
+    setIsStatusModalOpen(true);
+  };
+
+  // Handle form email submission and validation
+  const handleEmailInputChange = (e) => {
+    setEmailInput(e.target.value);
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const text = await file.text();
+      const lines = text.split(/\r?\n/);
+      const fileEmails = lines
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
+      setEmails([...emails, ...fileEmails]);
+    }
+  };
+
+  const validateAndSendEmails = (emailList) => {
+    const emailRegex =
+      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+    // Filter unique emails
+    const uniqueEmails = Array.from(new Set(emailList));
+
+    // Validate emails
+    const validEmails = uniqueEmails.filter((email) => emailRegex.test(email));
+    const invalidEmails = uniqueEmails.filter(
+      (email) => !emailRegex.test(email)
+    );
+
+    if (invalidEmails.length > 0) {
+      // Handle invalid emails, e.g., show an error message to the user
+      console.error("Invalid emails detected:", invalidEmails);
+      showStatusModal(
+        "Error",
+        "Invalid Emails detected. Please double check your input and try again.",
+        "error"
+      );
+
+      // Optionally, continue with valid emails or stop the process here
+      return; // Early return; adjust based on your application's needs
+    }
+
+    console.log("Valid emails ready for OTP:", validEmails);
+    // Proceed with OTP sending or further processing for valid emails
+    generateOTP(validEmails);
+    console.log("OTP sent successfully to all emails");
+  };
+
+  const handleSubmitEmails = (e) => {
+    e.preventDefault();
+
+    // Combine emails from textarea and file upload
+    const combinedEmails = [
+      ...emails,
+      ...emailInput.split(/\s*,\s*/).filter((email) => email.trim()),
+    ];
+
+    // Check if both the email input and file upload are empty
+    if (combinedEmails.length === 0) {
+      showStatusModal(
+        "Error",
+        "Please enter emails or upload a file.",
+        "error"
+      );
+      return; // Stop the submission if no emails are provided
+    }
+
+    // Call the validate and send function
+    validateAndSendEmails(combinedEmails);
+
+    // Reset states
+    setEmailInput("");
+    setEmails([]);
+  };
 
   const handleInstanceFieldChange = (fieldName, e) => {
     setForm({ ...form, [fieldName]: e.target.value });
@@ -47,9 +138,15 @@ const CreateInstance = () => {
       );
       setInstanceId(instanceId); // Assuming the returned object has an instanceId field
       setIsLoading(false);
+      showStatusModal(
+        "Success",
+        "Voting instance created successfully",
+        "confirmation"
+      );
     } catch (error) {
       console.error(error);
       setIsLoading(false);
+      showStatusModal("Error", "Failed to create voting instance", "error");
     }
   };
 
@@ -59,18 +156,17 @@ const CreateInstance = () => {
     try {
       await addCandidates(instanceId, candidates);
       setIsLoading(false);
-      navigate("/profile"); // Or navigate to a confirmation/success page
+      showStatusModal(
+        "Success",
+        "Candidates added successfully",
+        "confirmation"
+      );
+      // navigate("/profile"); // Or navigate to a confirmation/success page
     } catch (error) {
       console.error(error);
       setIsLoading(false);
+      showStatusModal("Error", "Failed to add candidates", "error");
     }
-  };
-
-  // Function to handle voters added, potentially sending OTPs here
-  const handleVotersAdded = (emails) => {
-    console.log("Voters added:", emails);
-    // Here you'd typically handle the voters, such as by calling an API to register them
-    navigate("/profile"); // Redirect after voters are added
   };
 
   return (
@@ -81,7 +177,9 @@ const CreateInstance = () => {
         className="w-full mt-[20px] flex flex-col gap-[30px]"
       >
         <div className="w-full bg-[#8c6dfd] text-white text-center py-[10px] rounded-[10px]">
-          <h2 className="font-epilogue font-bold">Create a Voting Instance</h2>
+          <h2 className="font-epilogue font-bold">
+            1. Create a Voting Instance
+          </h2>
         </div>
         <div className="flex flex-wrap gap-[40px]">
           <FormField
@@ -126,7 +224,9 @@ const CreateInstance = () => {
           className="w-full mt-[40px] flex flex-col gap-[30px]"
         >
           <div className="w-full bg-[#8c6dfd] text-white text-center py-[10px] rounded-[10px]">
-            <h2 className="font-epilogue font-bold">Add Candidate Details</h2>
+            <h2 className="font-epilogue font-bold">
+              2. Add Candidate Details
+            </h2>
           </div>
           {candidates.map((candidate, index) => (
             <div key={index}>
@@ -176,10 +276,50 @@ const CreateInstance = () => {
           </div>
         </form>
       )}
-
-      <div>
-        <VotersInput onVotersAdded={handleVotersAdded} />
-      </div>
+      {instanceId && (
+        <form
+          onSubmit={handleSubmitEmails}
+          className="w-full mt-4 flex flex-col gap-4"
+        >
+          <div className="w-full bg-[#8c6dfd] text-white text-center py-[10px] rounded-[10px]">
+            <h2 className="font-epilogue font-bold">
+              3. Add Voters to your instance
+            </h2>
+          </div>
+          <FormField
+            labelName="Emails"
+            placeholder="Enter emails separated by commas"
+            isTextArea={true}
+            value={emailInput}
+            handleChange={handleEmailInputChange}
+          />
+          <div className="flex-1 w-full flex flex-col">
+            <span className="font-epilogue font-medium text-[14px] leading-[22px] text-[#808191] mb-[10px]">
+              Upload email list (.csv, .txt)
+            </span>
+            <input
+              type="file"
+              onChange={handleFileChange}
+              accept=".csv, .txt"
+              className="py-[15px] sm:px-[25px] px-[15px] outline-none border-[1px] border-[#3a3a43] bg-transparent font-epilogue text-white text-[14px] placeholder:text-[#4b5264] rounded-[10px] sm:min-w-[300px] cursor-pointer"
+            />
+          </div>
+          <div className="flex justify-between items-center gap-4">
+            <CustomButton
+              btnType="submit"
+              title="Submit Emails"
+              styles="bg-[#4caf50]"
+            />
+          </div>
+        </form>
+      )}
+      <StatusModal
+        isOpen={isStatusModalOpen}
+        onClose={() => setIsStatusModalOpen(false)}
+        title={modalInfo.title}
+        message={modalInfo.message}
+        status={modalInfo.status}
+      />
     </div>
   );
 };

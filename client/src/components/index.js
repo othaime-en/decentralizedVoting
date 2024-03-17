@@ -16,3 +16,4 @@ export { default as PieChartCandidate } from "./PieChartCandidate";
 export { default as BarChartComponent } from "./BarChartComponent";
 export { default as DisplayUserInstances } from "./DisplayUserInstances";
 export { default as UpdateCandidateModal } from "./UpdateCandidateModal";
+export { default as StatusModal } from "./StatusModal";

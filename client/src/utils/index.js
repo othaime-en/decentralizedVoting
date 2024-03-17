@@ -51,7 +51,6 @@ export const getStatusColor = (status) => {
 };
 
 export const epochToDateTime = (epochTime) => {
-
   if (epochTime === 0) return "N/A";
 
   // Create a Date object using the epoch time
@@ -79,4 +78,48 @@ export const checkIfImage = (url, callback) => {
 
   img.onload = () => callback(true);
   img.onerror = () => callback(false);
+};
+
+// Function to request OTP generation
+// Adjusted function to handle an array of emails
+export const generateOTP = async (emails) => {
+  try {
+    const response = await fetch("http://localhost:3001/send-otp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ emails }), // 'emails' is expected to be an array
+    });
+
+    if (response.ok) {
+      console.log("OTP sent successfully to all emails");
+    } else {
+      console.error("Failed to send OTP to some or all emails");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
+
+// Function to verify OTP
+export const verifyOTP = async (otp) => {
+  try {
+    const response = await fetch("http://localhost:3001/verify-otp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ otp }),
+    });
+
+    if (response.ok) {
+      console.log("OTP verified successfully");
+      // Proceed with any follow-up actions after successful verification
+    } else {
+      console.error("Failed to verify OTP");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
 };

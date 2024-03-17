@@ -29,8 +29,11 @@ const CampaignDetails = () => {
   const [votedRoles, setVotedRoles] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [results, setResults] = useState([]);
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
 
   const remainingHours = hoursLeft(state.endTime);
+  const isVoteButtonEnabled =
+    isOtpVerified && state.instanceStatus === "Active";
 
   const fetchCandidates = async () => {
     const data = await getCandidates(state.instanceId);
@@ -55,6 +58,10 @@ const CampaignDetails = () => {
     // Update selectedRole if it gets removed
     if (!roles.includes(selectedRole)) setSelectedRole(roles[0] || "");
   }, [candidates, votedRoles]);
+
+  const handleOtpVerification = (verified) => {
+    setIsOtpVerified(verified);
+  };
 
   const handleVote = async () => {
     setIsLoading(true);
@@ -271,13 +278,16 @@ const CampaignDetails = () => {
                   resonate with you.
                 </p>
               </div>
-              <OTPInput />
+              <OTPInput onOtpVerification={handleOtpVerification} />
 
               <CustomButton
                 btnType="button"
                 title="Vote Now"
-                styles="w-full bg-[#8c6dfd]"
-                handleClick={handleVote}
+                styles={`w-full ${
+                  isVoteButtonEnabled ? "bg-[#8c6dfd]" : "bg-gray-400"
+                }`} // Conditional styling based on OTP verification and instance status
+                handleClick={isVoteButtonEnabled ? handleVote : null} // Only set handleClick if the button is enabled
+                disabled={!isVoteButtonEnabled} // Disable based on both conditions
               />
             </div>
           </div>

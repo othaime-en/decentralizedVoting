@@ -1,9 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { CustomButton, FormField } from "../components"; // Adjust the path as needed
 
 const VotersInput = ({ onVotersAdded }) => {
   const [emailInput, setEmailInput] = useState("");
   const [file, setFile] = useState(null);
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  useEffect(() => {
+    // Update form validity on email or file input change
+    const emails = parseEmailsFromText(emailInput);
+    setIsFormValid(emails.length > 0 || file !== null);
+  }, [emailInput, file]);
+
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const parseEmailsFromText = (text) => {
+    return text
+      .split(/[\n,]+/)
+      .map((email) => email.trim())
+      .filter((email) => email && isValidEmail(email));
+  };
 
   const handleEmailChange = (e) => {
     setEmailInput(e.target.value);
@@ -13,37 +32,41 @@ const VotersInput = ({ onVotersAdded }) => {
     setFile(e.target.files[0]);
   };
 
-  const parseEmailsFromText = (text) => {
-    // Split text by new lines and commas for CSV, then filter out any empty strings
-    return text
-      .split(/[\n,]+/)
-      .map((email) => email.trim())
-      .filter((email) => email);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    let emails = [];
 
-    if (emailInput) {
-      emails = parseEmailsFromText(emailInput);
-    }
+    let emails = parseEmailsFromText(emailInput);
 
     if (file) {
       const reader = new FileReader();
-      reader.onload = async (e) => {
-        const text = e.target.result;
-        const fileEmails = parseEmailsFromText(text);
-        onVotersAdded([...emails, ...fileEmails]);
+      reader.onload = (e) => {
+        const fileContent = e.target.result;
+        const fileEmails = parseEmailsFromText(fileContent);
+        const allEmails = [...new Set([...emails, ...fileEmails])]; // Remove duplicates
+        if (allEmails.length > 0) {
+          onVotersAdded(allEmails);
+          // Reset form upon successful handling
+          setEmailInput("");
+          setFile(null);
+          setIsFormValid(false);
+        } else {
+          // Handle case where no valid emails are found
+          console.error("No valid emails provided.");
+        }
       };
       reader.readAsText(file);
-    } else {
+    } else if (emails.length > 0) {
       onVotersAdded(emails);
+      // Reset form upon successful handling
+      setEmailInput("");
+      setFile(null);
+      setIsFormValid(false);
+    } else {
+      // Handle case where no valid emails are inputted and no file is selected
+      console.error(
+        "Please input valid emails or select a file with valid emails."
+      );
     }
-
-    // Reset form
-    setEmailInput("");
-    setFile(null);
   };
 
   return (
@@ -71,6 +94,7 @@ const VotersInput = ({ onVotersAdded }) => {
           btnType="submit"
           title="Add Voters"
           styles="bg-[#1dc071]"
+          disabled={!isFormValid}
         />
       </div>
     </form>
