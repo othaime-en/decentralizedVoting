@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from "react";
+import React, { useState, useEffect, Suspense, lazy, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ethers } from "ethers";
 
@@ -10,8 +10,9 @@ import {
   PieChartCandidate,
   FormField,
   UpdateCandidateModal,
+  StatusModal,
 } from "../components";
-import { hoursLeft } from "../utils";
+import { hoursLeft, generateOTP } from "../utils";
 
 // Dynamically import the ResultsModal component
 const ResultsModal = lazy(() => import("../components/ResultsModal"));
@@ -49,9 +50,107 @@ const InstanceConfigDetails = () => {
   const [newCandidates, setNewCandidates] = useState([
     { name: "", role: "", description: "" },
   ]);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [modalInfo, setModalInfo] = useState({
+    title: "",
+    message: "",
+    status: "", // 'confirmation', 'error', 'warning'
+  });
 
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
+
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
+  const [emails, setEmails] = useState([]);
+  const fileInputRef = useRef(null);
+  // Your existing state and functions
+
+  // Handle form email submission and validation
+  const handleEmailInputChange = (e) => {
+    setEmailInput(e.target.value);
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const text = await file.text();
+      const lines = text.split(/\r?\n/);
+      const fileEmails = lines
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
+      setEmails([...emails, ...fileEmails]);
+    }
+  };
+
+  const validateAndSendEmails = (emailList) => {
+    const emailRegex =
+      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+    // Filter unique emails
+    const uniqueEmails = Array.from(new Set(emailList));
+
+    // Validate emails
+    const validEmails = uniqueEmails.filter((email) => emailRegex.test(email));
+    const invalidEmails = uniqueEmails.filter(
+      (email) => !emailRegex.test(email)
+    );
+
+    if (invalidEmails.length > 0) {
+      // Handle invalid emails, e.g., show an error message to the user
+      console.error("Invalid emails detected:", invalidEmails);
+      showStatusModal(
+        "Error",
+        "Invalid Emails detected. Please double check your input and try again.",
+        "error"
+      );
+
+      // Optionally, continue with valid emails or stop the process here
+      return; // Early return; adjust based on your application's needs
+    }
+
+    console.log("Valid emails ready for OTP:", validEmails);
+    // Proceed with OTP sending or further processing for valid emails
+    generateOTP(validEmails);
+    console.log("OTP sent successfully to all emails");
+    showStatusModal(
+      "Success",
+      "OTP sent successfully to all emails.",
+      "confirmation"
+    );
+  };
+
+  const handleSubmitEmails = (e) => {
+    e.preventDefault();
+
+    // Combine emails from textarea and file upload
+    const combinedEmails = [
+      ...emails,
+      ...emailInput.split(/\s*,\s*/).filter((email) => email.trim()),
+    ];
+
+    // Check if both the email input and file upload are empty
+    if (combinedEmails.length === 0) {
+      showStatusModal(
+        "Error",
+        "Please enter emails or upload a file.",
+        "error"
+      );
+      return; // Stop the submission if no emails are provided
+    }
+
+    // Call the validate and send function
+    validateAndSendEmails(combinedEmails);
+
+    // Reset states
+    setEmailInput("");
+    setEmails([]);
+  };
+
+  const showStatusModal = (title, message, status) => {
+    setModalInfo({ title, message, status });
+    setIsStatusModalOpen(true);
+  };
 
   // Function to open update modal with selected candidate details
   const openUpdateModal = (candidate) => {
@@ -77,10 +176,20 @@ const InstanceConfigDetails = () => {
     try {
       await addCandidates(state.instanceId, newCandidates);
       setIsLoading(false);
+      showStatusModal(
+        "Success",
+        "Successfully added candidates",
+        "confirmation"
+      );
       closeAddCandidateModal();
       fetchCandidates();
     } catch (error) {
       console.error(error);
+      const reasonMatch = error.message.match(/Reason: (.+?)\n/);
+      if (reasonMatch && reasonMatch[1]) {
+        return reasonMatch[1];
+      }
+      showStatusModal("Error", reasonMatch, "error");
       setIsLoading(false);
     }
   };
@@ -323,9 +432,16 @@ const InstanceConfigDetails = () => {
 
           {/* New section for Voters */}
           <div className="w-full bg-[#1c1c24] p-4 rounded-[10px] mt-10">
-            <h4 className="font-epilogue font-semibold text-[18px] text-white uppercase mb-4">
-              Voters
-            </h4>
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="font-epilogue font-semibold text-[18px] text-white uppercase">
+                Voters
+              </h4>
+              <CustomButton
+                title="Add Voters"
+                styles="bg-[#8c6dfd] text-white py-2 px-4 rounded hover:bg-[#7b6fe5] transition duration-300 ease-in-out" // Added some styling for the button
+                handleClick={() => setIsEmailModalOpen(true)}
+              />
+            </div>
             <div>
               {/* Assuming you have a 'voters' state or prop containing voter details */}
               {voters.length > 0 ? (
@@ -480,9 +596,86 @@ const InstanceConfigDetails = () => {
                 styles="w-full bg-[red]"
                 handleClick={handleDeleteInstance}
               />
+
+              <StatusModal
+                isOpen={isStatusModalOpen}
+                onClose={() => setIsStatusModalOpen(false)}
+                title={modalInfo.title}
+                message={modalInfo.message}
+                status={modalInfo.status}
+              />
             </div>
           </div>
         </div>
+      </div>
+      <div>
+        {isEmailModalOpen && (
+          <div
+            className="modal-backdrop"
+            onClick={() => setIsEmailModalOpen(false)}
+          >
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <form
+                onSubmit={handleSubmitEmails}
+                className="flex flex-col gap-4"
+              >
+                <h2 className="font-epilogue font-bold text-white text-center bg-[#8c6dfd] py-[10px] rounded-[10px]">
+                  3. Add Voters to your instance
+                </h2>
+                <FormField
+                  labelName="Emails"
+                  placeholder="Enter emails separated by commas"
+                  isTextArea={true}
+                  value={emailInput}
+                  handleChange={handleEmailInputChange}
+                />
+                <div className="flex-1 w-full flex flex-col">
+                  <input
+                    type="file"
+                    onChange={handleFileChange}
+                    accept=".csv, .txt"
+                    className="py-[15px] sm:px-[25px] px-[15px] outline-none border-[1px] border-[#3a3a43] bg-transparent font-epilogue text-white text-[14px] placeholder:text-[#4b5264] rounded-[10px] sm:min-w-[300px] cursor-pointer"
+                  />
+                </div>
+                <div className="flex justify-between items-center gap-4">
+                  <CustomButton
+                    btnType="submit"
+                    title="Submit Emails"
+                    styles="bg-[#4caf50]"
+                  />
+                  <CustomButton
+                    btnType="button"
+                    title="Close"
+                    styles="bg-red-500"
+                    handleClick={() => setIsEmailModalOpen(false)}
+                  />
+                </div>
+              </form>
+              <style jsx>{`
+                .modal-backdrop {
+                  position: fixed;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                  background-color: rgba(0, 0, 0, 0.5);
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  z-index: 10;
+                }
+                .modal-content {
+                  background-color: #1c1c24;
+                  padding: 20px;
+                  border-radius: 8px;
+                  max-width: 500px;
+                  width: 90%;
+                  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                }
+              `}</style>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

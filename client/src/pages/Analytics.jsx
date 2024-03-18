@@ -3,12 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ethers } from "ethers";
 
-import {
-  DataTable,
-  PDFDownloadButton,
-  BarChartComponent,
-  PieChartComponent,
-} from "../components";
+import { DataTable, BarChartComponent, PieChartComponent } from "../components";
 import { useStateContext } from "../context";
 
 const Analytics = () => {
@@ -90,7 +85,7 @@ const Analytics = () => {
       {/* Content-2: BarChartComponent */}
       <div>
         <h3 align="center" className="text-lg font-bold text-white mb-2">
-          Voter Participation per Instance
+          Candidate Distribution per Instance
         </h3>
         <div className="rounded-lg p-5" style={{ height: "400px" }}>
           <BarChartComponent data={voterParticipationData} />
@@ -100,7 +95,7 @@ const Analytics = () => {
       {/* Content-3: PieChartComponent */}
       <div>
         <h3 align="center" className="text-lg font-bold text-white mb-2">
-          Voter Participation by Organization
+          Voter Participation per Instance
         </h3>
         <div
           className="rounded-lg p-5"
