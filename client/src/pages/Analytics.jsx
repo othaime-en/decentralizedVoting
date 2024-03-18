@@ -40,7 +40,7 @@ const Analytics = () => {
         accessor: "title",
       },
       {
-        Header: "Organization",
+        Header: "Org",
         accessor: "organizationName",
       },
       {
@@ -48,7 +48,7 @@ const Analytics = () => {
         accessor: "candidateCount",
       },
       {
-        Header: "No of Voters",
+        Header: "Voters",
         accessor: "voteCount",
       },
       {
@@ -62,10 +62,6 @@ const Analytics = () => {
       {
         Header: "End Time",
         accessor: "endTime",
-      },
-      {
-        Header: "PRIVATE",
-        accessor: "isPrivate",
       },
       // Define other columns as needed
     ],

@@ -38,6 +38,7 @@ const DataTable = ({ columns, data }) => {
     canNextPage,
     pageOptions,
     pageCount,
+    rows,
     gotoPage,
     nextPage,
     previousPage,
@@ -185,9 +186,9 @@ const DataTable = ({ columns, data }) => {
             ))}
           </select>
           <PDFDownloadButton
-            data={data}
+            data={rows.map((row) => row.original)}
             columns={columns}
-            title="Your Table Title"
+            title="Voting Analytics Report"
           />
         </div>
       </div>
