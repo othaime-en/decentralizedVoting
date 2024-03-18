@@ -164,3 +164,14 @@ export const convertDurationToSeconds = (duration, unit) => {
   };
   return duration * unitInSeconds[unit];
 };
+
+export const calculateTotalVotes = (candidates) => {
+  let totalVotes = 0;
+  for (let candidate of candidates) {
+    // Check if 'voteCount' property exists for the candidate
+    if (candidate.voteCount !== undefined) {
+      totalVotes += candidate.voteCount;
+    }
+  }
+  return totalVotes;
+};

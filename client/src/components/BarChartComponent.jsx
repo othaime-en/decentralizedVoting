@@ -7,7 +7,7 @@ const BarChartComponent = ({ data }) => {
     labels: data.map((d) => d.title || `ID ${d.instanceId}`), // Use title or ID if title is not available
     datasets: [
       {
-        label: "Voter Participation",
+        label: "Candidate Distribution per Instance",
         data: data.map((d) => d.candidateCount), // Assuming 'voteCount' holds the total number of voters
         backgroundColor: "rgba(29, 192, 113, 0.5)",
         borderColor: "rgba(29, 192, 113, 1)",

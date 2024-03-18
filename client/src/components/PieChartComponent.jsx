@@ -4,10 +4,10 @@ import { Pie } from "react-chartjs-2";
 
 const PieChartComponent = ({ data }) => {
   const chartData = {
-    labels: data.map((d) => d.organizationName), // Assumes you have 'organizationName' in your data
+    labels: data.map((d) => d.name), // Assumes you have 'organizationName' in your data
     datasets: [
       {
-        data: data.map((d) => d.candidateCount), // Again, assuming 'voteCount' holds the number of voters
+        data: data.map((d) => d.votersCount), // Again, assuming 'voteCount' holds the number of voters
         backgroundColor: [
           "#FF6384",
           "#36A2EB",

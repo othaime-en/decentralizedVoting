@@ -10,13 +10,13 @@ const Analytics = () => {
   const [instances, setInstances] = useState([]);
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { contract, address, getAllInstances, getCandidates } =
+  const { contract, address, getUserInstances, getCandidates } =
     useStateContext();
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const instancesData = await getAllInstances();
+      const instancesData = await getUserInstances();
       setInstances(instancesData);
       setLoading(false);
     };
@@ -44,7 +44,7 @@ const Analytics = () => {
       },
       {
         Header: "Voters",
-        accessor: "voteCount",
+        accessor: "votersCount",
       },
       {
         Header: "Status",

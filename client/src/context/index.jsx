@@ -16,7 +16,7 @@ const StateContext = createContext();
 
 export const StateContextProvider = ({ children }) => {
   const { contract } = useContract(
-    "0x51D0C0F930eFa8aaA3FdD728a433BCEECD957c40"
+    "0x81ba256Dd8B05c0577c72E02Bec40f22322e4469"
   );
   const { mutateAsync: createCampaign } = useContractWrite(
     contract,
@@ -102,23 +102,32 @@ export const StateContextProvider = ({ children }) => {
     const instances = [];
     for (let i = 1; i <= count; i++) {
       const instance = await contract.call("instances", [i]);
-      instances.push(instance);
+      // Fetch only voter addresses for the current instance
+      const votersAndRoles = await getVoterAndRoles(i); // Adjusted to get only voters
+      const voters = votersAndRoles.voters;
+
+      // Parse the instance with only voters data included
+      const parsedInstance = {
+        instanceId: instance.id.toNumber(),
+        title: instance.name,
+        organizationName: instance.organizationName,
+        description: instance.description,
+        owner: instance.creator,
+        candidateCount: instance.candidateCount.toNumber(),
+        instanceStatus: getStatus(instance.status),
+        startTime: epochToDateTime(instance.startTime.toNumber()),
+        endTime: epochToDateTime(instance.endTime.toNumber()),
+        isPrivate: instance.isPrivate,
+        voters, // Only include voters here
+        votersCount: voters.length,
+        votersAndRoles,
+      };
+
+      instances.push(parsedInstance);
     }
 
-    const parsedInstances = instances.map((instance, i) => ({
-      instanceId: instance.id.toNumber(),
-      title: instance.name,
-      organizationName: instance.organizationName,
-      description: instance.description,
-      owner: instance.creator,
-      candidateCount: instance.candidateCount.toNumber(),
-      instanceStatus: getStatus(instance.status),
-      startTime: epochToDateTime(instance.startTime.toNumber()),
-      endTime: epochToDateTime(instance.endTime.toNumber()),
-      isPrivate: instance.isPrivate.toString(),
-    }));
-    console.log("Here are the parsed instances: ", parsedInstances);
-    return parsedInstances;
+    console.log("Here are the parsed instances with voters only: ", instances);
+    return instances;
   };
 
   function getStatus(status) {
@@ -281,6 +290,7 @@ export const StateContextProvider = ({ children }) => {
         updateYourCandidate,
         endVoting,
         deleteVotingInstance,
+        getVoterAndRoles,
       }}
     >
       {children}

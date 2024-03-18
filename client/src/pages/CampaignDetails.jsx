@@ -125,7 +125,7 @@ const CampaignDetails = () => {
         <div className="flex md:w-[150px] w-full flex-wrap justify-between gap-[30px]">
           <CountBox title="Hours Left" value={remainingHours} />
           <CountBox title="Candidates" value={state.candidateCount} />
-          <CountBox title="Total Votes" value="1" /*{candidates.length}*/ />
+          <CountBox title="Total Voters" value={state.voters.length} />
         </div>
       </div>
 

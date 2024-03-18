@@ -12,7 +12,12 @@ import {
   UpdateCandidateModal,
   StatusModal,
 } from "../components";
-import { hoursLeft, generateOTP, convertDurationToSeconds } from "../utils";
+import {
+  hoursLeft,
+  generateOTP,
+  convertDurationToSeconds,
+  calculateTotalVotes,
+} from "../utils";
 
 // Dynamically import the ResultsModal component
 const ResultsModal = lazy(() => import("../components/ResultsModal"));
@@ -21,7 +26,6 @@ const durationOptions = [
   { label: "Days", value: "days" },
   { label: "Weeks", value: "weeks" },
 ];
-const voters = [];
 
 const InstanceConfigDetails = () => {
   const { state } = useLocation();
@@ -37,6 +41,7 @@ const InstanceConfigDetails = () => {
     deleteCandidate,
     endVoting,
     deleteVotingInstance,
+    getVotersAndRoles,
   } = useStateContext();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -45,7 +50,10 @@ const InstanceConfigDetails = () => {
   const [results, setResults] = useState([]);
   const [duration, setDuration] = useState("");
   const [durationUnit, setDurationUnit] = useState("hours");
+
   const remainingHours = hoursLeft(state.endTime);
+  const totalVotes = calculateTotalVotes(candidates);
+
   const [isAddCandidateModalOpen, setIsAddCandidateModalOpen] = useState(false);
   const [newCandidates, setNewCandidates] = useState([
     { name: "", role: "", description: "" },
@@ -318,8 +326,8 @@ const InstanceConfigDetails = () => {
         <CountBox title="Status" value={state.instanceStatus} />
         <CountBox title="Hours Left" value={remainingHours} />
         <CountBox title="Candidates" value={candidates.length} />
-        <CountBox title="Total Votes" value="1" />{" "}
-        <CountBox title="Unique Voters" value="X" />{" "}
+        <CountBox title="Total Votes" value={totalVotes} />
+        <CountBox title="Unique Voters" value={state.voters.length} />
         {/* Placeholder for the new CountBox */}
       </div>
 
@@ -482,14 +490,14 @@ const InstanceConfigDetails = () => {
             </div>
             <div>
               {/* Assuming you have a 'voters' state or prop containing voter details */}
-              {voters.length > 0 ? (
-                voters.map((voter, index) => (
+              {state.voters.length > 0 ? (
+                state.voters.map((voter, index) => (
                   <div
                     key={index}
                     className="bg-[#2a2a35] p-2 rounded-[10px] mb-2"
                   >
                     <p className="font-epilogue text-[16px] text-white">
-                      {voter.address} - {voter.roles}
+                      {voter}
                     </p>
                   </div>
                 ))
