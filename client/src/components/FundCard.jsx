@@ -2,20 +2,27 @@ import React from "react";
 import { Novatrix } from "uvcanvas";
 
 import { tagType, thirdweb } from "../assets";
-import { hoursLeft, getStatusColor } from "../utils";
+import {
+  hoursLeft,
+  getStatusColor,
+  getRandomImageUrl,
+  imageURLs,
+} from "../utils";
 
 const FundCard = ({
   owner,
   title,
   description,
   instanceStatus,
-  target,
+  instanceId,
   endTime,
   candidateCount,
-  image,
+  target,
   handleClick,
 }) => {
   const remainingHours = hoursLeft(endTime);
+
+  const imageUrl = getRandomImageUrl(imageURLs, instanceId);
 
   return (
     <div
@@ -23,7 +30,7 @@ const FundCard = ({
       onClick={handleClick}
     >
       <img
-        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRj102iDPG6R3exjEUScJOM0WmFWLbAk3l0dQ&usqp=CAU"
+        src={imageUrl}
         alt="vote"
         className="w-full h-[158px] object-cover rounded-[15px]"
       />
