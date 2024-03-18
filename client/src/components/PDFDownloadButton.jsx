@@ -14,8 +14,18 @@ const PDFDownloadButton = ({ data, columns, title }) => {
       doc.addImage(logoBase64, "PNG", 9, 5, 15, 10);
     }
 
+    // Set font for the header text
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+
+    // Set text color to black or any other color you prefer
+    doc.setTextColor(0, 0, 0);
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const headerText = "www.devote.com";
+    doc.text(headerText, pageWidth - 20, 10, { align: "right" });
+
     // Title
-    // Set font for the title
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.setTextColor(140, 111, 253);
@@ -31,7 +41,7 @@ const PDFDownloadButton = ({ data, columns, title }) => {
     // Date
     doc.setFontSize(11);
     doc.setFont("helvetica", "normal");
-    doc.text(`Date: ${new Date().toLocaleString()}`, 14, 32);
+    doc.text(`Report Time and Date: ${new Date().toLocaleString()}`, 14, 32);
 
     // Address - can be customized or removed as needed
     doc.setFontSize(11);
@@ -41,7 +51,6 @@ const PDFDownloadButton = ({ data, columns, title }) => {
     doc.setFontSize(11);
     doc.text("Tel: +254 123 456 789", 14, 52);
     doc.text("Email: support@devote.com", 14, 57);
-    doc.text("Website: www.devote.com", 14, 62);
 
     // Table
     doc.autoTable({
