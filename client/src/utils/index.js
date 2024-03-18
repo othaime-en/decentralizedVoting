@@ -1,10 +1,17 @@
-export const hoursLeft = (unixTime) => {
+export const hoursLeft = (dateTimeString) => {
+  const targetTime = new Date(dateTimeString).getTime();
   const now = Date.now();
-  const targetTime = unixTime * 1000;
+
+  if (isNaN(targetTime)) {
+    return "Invalid date format";
+  }
+
+  if (targetTime < now) {
+    return "N/A";
+  }
+
   const differenceInMilliseconds = targetTime - now;
   const differenceInHours = differenceInMilliseconds / (1000 * 60 * 60);
-
-  if (differenceInHours < 0) return 0;
 
   return differenceInHours.toFixed(0);
 };
@@ -133,6 +140,7 @@ export const imageURLs = [
   "https://images.unsplash.com/photo-1598966835412-6de6f92c243d?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8c3RyZWV0fGVufDB8fDB8fHww",
   "https://plus.unsplash.com/premium_photo-1684760975849-81b096c00cc0?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8c3RyZWV0fGVufDB8fDB8fHww",
   "https://images.unsplash.com/photo-1530109167181-4c8c11f6d317?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fHN0cmVldHxlbnwwfHwwfHx8MA%3D%3D",
+  "https://cdn.midjourney.com/27bac32d-9ad6-400a-8d53-0784548ff8d0/0_0.webp",
   "https://images.unsplash.com/photo-1568715684971-9ac138754ab9?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fHN0cmVldHxlbnwwfHwwfHx8MA%3D%3D",
 ];
 
@@ -146,4 +154,13 @@ export const getRandomImageUrl = (urls, instanceId) => {
     localStorage.setItem(`imageUrl_${instanceId}`, selectedUrl); // Store the selected URL for future reference
     return selectedUrl;
   }
+};
+
+export const convertDurationToSeconds = (duration, unit) => {
+  const unitInSeconds = {
+    hours: 3600,
+    days: 86400,
+    weeks: 604800,
+  };
+  return duration * unitInSeconds[unit];
 };

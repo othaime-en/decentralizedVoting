@@ -12,7 +12,7 @@ import {
   UpdateCandidateModal,
   StatusModal,
 } from "../components";
-import { hoursLeft, generateOTP } from "../utils";
+import { hoursLeft, generateOTP, convertDurationToSeconds } from "../utils";
 
 // Dynamically import the ResultsModal component
 const ResultsModal = lazy(() => import("../components/ResultsModal"));
@@ -185,11 +185,7 @@ const InstanceConfigDetails = () => {
       fetchCandidates();
     } catch (error) {
       console.error(error);
-      const reasonMatch = error.message.match(/Reason: (.+?)\n/);
-      if (reasonMatch && reasonMatch[1]) {
-        return reasonMatch[1];
-      }
-      showStatusModal("Error", reasonMatch, "error");
+      showStatusModal("Error", "There was an error adding candidates", "error");
       setIsLoading(false);
     }
   };
@@ -222,9 +218,15 @@ const InstanceConfigDetails = () => {
       );
       fetchCandidates();
       setIsLoading(false);
+      showStatusModal("Success", "Candidate updated", "confirmation");
     } catch (error) {
       console.error(error);
       setIsLoading(false);
+      showStatusModal(
+        "Error",
+        "There was an error updating the candidate",
+        "error"
+      );
     }
   };
 
@@ -234,17 +236,37 @@ const InstanceConfigDetails = () => {
       await deleteCandidate(state.instanceId, candidateId);
       fetchCandidates();
       setIsLoading(false);
+      showStatusModal("Success", "Candidate deleted", "confirmation");
     } catch (error) {
       console.error(error);
       setIsLoading(false);
+      showStatusModal(
+        "Error",
+        "There was an error deleting the candidate",
+        "error"
+      );
     }
   };
 
-  const handleActionBasedOnStatus = () => {
+  const handleActionBasedOnStatus = async () => {
     if (state.instanceStatus === "Pending") {
-      startVoting(state.instanceId, duration);
+      setIsLoading(true);
+      const convertedDuration = convertDurationToSeconds(
+        duration,
+        durationUnit
+      );
+      await startVoting(state.instanceId, convertedDuration);
+      setIsLoading(false);
+      showStatusModal("Success", "Voting started", "confirmation");
     } else if (state.instanceStatus === "Active") {
-      extendVoting(state.instanceId, duration);
+      setIsLoading(true);
+      const convertedDuration = convertDurationToSeconds(
+        duration,
+        durationUnit
+      );
+      await extendVoting(state.instanceId, convertedDuration);
+      setIsLoading(false);
+      showStatusModal("Success", "Voting time extended", "confirmation");
     }
     // No action for 'Ended' as the button will be disabled
   };
@@ -254,9 +276,15 @@ const InstanceConfigDetails = () => {
     try {
       await endVoting(state.instanceId);
       setIsLoading(false);
+      showStatusModal("Success", "Voting ended successfully", "confirmation");
     } catch (error) {
       console.error(error);
       setIsLoading(false);
+      showStatusModal(
+        "Error",
+        "There was an error ending your voting",
+        "error"
+      );
     }
   };
 
@@ -265,10 +293,20 @@ const InstanceConfigDetails = () => {
     try {
       await deleteVotingInstance(state.instanceId);
       setIsLoading(false);
+      showStatusModal(
+        "Success",
+        "Instance deleted successfully",
+        "confirmation"
+      );
       navigate("/profile");
     } catch (error) {
       console.error(error);
       setIsLoading(false);
+      showStatusModal(
+        "Error",
+        "There was an error deleting your instance",
+        "error"
+      );
     }
   };
 

@@ -12,6 +12,10 @@ const StatusModal = ({ isOpen, onClose, title, message, status }) => {
       ? "bg-yellow-600"
       : "bg-green-600";
 
+  // Determine button text color based on modal background color
+  const btnTextColor =
+    status === "error" || status === "warning" ? "text-white" : "text-black";
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className={`rounded-lg p-5 w-full max-w-md ${bgColor} text-white`}>
@@ -21,7 +25,7 @@ const StatusModal = ({ isOpen, onClose, title, message, status }) => {
           <CustomButton
             btnType="button"
             title="Close"
-            styles="bg-white text-black hover:bg-gray-200"
+            styles={`bg-white ${btnTextColor} hover:bg-gray-200`}
             handleClick={onClose}
           />
         </div>
