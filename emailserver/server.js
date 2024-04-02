@@ -19,7 +19,7 @@ const transporter = nodemailer.createTransport({
 
 const otpStorage = {};
 
-const OTP_EXPIRATION_TIME = 120 * 60 * 1000; // 5 minutes
+const OTP_EXPIRATION_TIME = 120 * 60 * 1000;
 
 // Generate and send OTP
 app.post("/send-otp", (req, res) => {
@@ -45,7 +45,6 @@ app.post("/send-otp", (req, res) => {
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.log(`Failed to send OTP to ${email}: ${error}`);
-        // In a real application, you might want to handle partial failures more gracefully
       } else {
         console.log(`OTP sent to ${email}: ${info.response}`);
       }
