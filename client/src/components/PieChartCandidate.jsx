@@ -1,13 +1,12 @@
-// PieChartComponent.js
 import React from "react";
 import { Pie } from "react-chartjs-2";
 
 const PieChartComponent = ({ data }) => {
   const chartData = {
-    labels: data.map((d) => d.name), // Assumes you have 'organizationName' in your data
+    labels: data.map((d) => d.name),
     datasets: [
       {
-        data: data.map((d) => d.voteCount), // Again, assuming 'voteCount' holds the number of voters
+        data: data.map((d) => d.voteCount),
         backgroundColor: [
           "#FF6384",
           "#36A2EB",
@@ -32,10 +31,10 @@ const PieChartComponent = ({ data }) => {
     // ... other options
     plugins: {
       legend: {
-        position: "right", // Position the legend on the right side
+        position: "right",
       },
     },
-    maintainAspectRatio: false, // Add this to maintain the aspect ratio
+    maintainAspectRatio: false,
   };
 
   return (

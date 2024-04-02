@@ -1,5 +1,5 @@
 import React from "react";
-import CustomButton from "./CustomButton"; // Adjust import paths as needed
+import CustomButton from "./CustomButton";
 
 const StatusModal = ({ isOpen, onClose, title, message, status }) => {
   if (!isOpen) return null;

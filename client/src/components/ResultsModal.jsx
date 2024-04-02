@@ -1,6 +1,5 @@
 import React from "react";
-import CustomButton from "./CustomButton"; // Ensure this import path matches your project structure
-
+import CustomButton from "./CustomButton";
 const ResultsModal = ({ isOpen, onClose, results, instanceName }) => {
   if (!isOpen) return null;
 

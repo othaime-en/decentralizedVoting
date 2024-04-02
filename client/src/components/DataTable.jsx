@@ -1,4 +1,3 @@
-// DataTable.js
 import React, { useState } from "react";
 import { useTable, useSortBy, useFilters, usePagination } from "react-table";
 
@@ -9,7 +8,6 @@ const DataTable = ({ columns, data }) => {
   const [titleFilter, setTitleFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
-  // Define enhanced columns with color-coded statuses
   const enhancedColumns = React.useMemo(() => {
     return columns.map((col) => {
       if (col.accessor === "instanceStatus") {

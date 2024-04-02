@@ -1,4 +1,3 @@
-// PDFDownloadButton.js
 import React from "react";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -68,7 +67,7 @@ const PDFDownloadButton = ({ data, columns, title }) => {
       styles: {
         font: "helvetica",
         cellPadding: { top: 2, right: 4, bottom: 2, left: 4 },
-      }, // Using Helvetica
+      },
     });
 
     // Footer
@@ -88,8 +87,6 @@ const PDFDownloadButton = ({ data, columns, title }) => {
     const pageHeight = doc.internal.pageSize.getHeight();
     const footerText = "© www.devote.com";
 
-    // Position the footer text at the bottom of the page
-    // '20' is the margin from the bottom of the page, adjust as needed
     doc.text(footerText, 20, pageHeight - 10, { align: "left" });
 
     // Save the PDF

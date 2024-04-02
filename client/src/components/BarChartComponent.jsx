@@ -1,4 +1,3 @@
-// BarChartComponent.js
 import React from "react";
 import { Bar } from "react-chartjs-2";
 
@@ -8,7 +7,7 @@ const BarChartComponent = ({ data }) => {
     datasets: [
       {
         label: "Candidate Distribution per Instance",
-        data: data.map((d) => d.candidateCount), // Assuming 'voteCount' holds the total number of voters
+        data: data.map((d) => d.candidateCount),
         backgroundColor: "rgba(29, 192, 113, 0.5)",
         borderColor: "rgba(29, 192, 113, 1)",
         borderWidth: 1,

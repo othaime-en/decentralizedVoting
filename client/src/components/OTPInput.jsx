@@ -61,12 +61,12 @@ const OTPInput = ({ onOtpVerification }) => {
         onKeyUp={handleKeyUp}
         placeholder="••••••"
         style={{
-          width: "100%", // Adjust width as needed
+          width: "100%",
           padding: "10px 15px",
           margin: "10px 0",
           fontSize: "18px",
           textAlign: "center",
-          letterSpacing: "8px", // Space out the digits
+          letterSpacing: "8px",
           color: "white",
           background: "#2a2a35",
           border: "1px solid #3a3a43",

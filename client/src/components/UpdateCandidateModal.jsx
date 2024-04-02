@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import FormField from "./FormField"; // Adjust import paths as needed
-import CustomButton from "./CustomButton"; // Adjust import paths as needed
+import FormField from "./FormField";
+import CustomButton from "./CustomButton";
 
 const UpdateCandidateModal = ({ isOpen, onClose, candidate, onUpdate }) => {
   const [formData, setFormData] = useState({
