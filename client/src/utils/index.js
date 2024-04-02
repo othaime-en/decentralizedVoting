@@ -16,12 +16,6 @@ export const hoursLeft = (dateTimeString) => {
   return differenceInHours.toFixed(0);
 };
 
-// export const calculateBarPercentage = (goal, raisedAmount) => {
-//   const percentage = Math.round((raisedAmount * 100) / goal);
-
-//   return percentage;
-// };
-
 export const calculateBarPercentage = (startTime, endTime) => {
   // Check if either startTime or endTime is zero
   if (startTime === 0 || endTime === 0) {
@@ -51,7 +45,7 @@ export const getStatusColor = (status) => {
     case "Active":
       return "#1dc071";
     case "Ended":
-      return "red"; // You can use a specific hex code for red if needed
+      return "red";
     default:
       return "#808191"; // Default color or for unknown status
   }
@@ -61,7 +55,7 @@ export const epochToDateTime = (epochTime) => {
   if (epochTime === 0) return "N/A";
 
   // Create a Date object using the epoch time
-  const date = new Date(epochTime * 1000); // JavaScript uses milliseconds
+  const date = new Date(epochTime * 1000);
 
   // Format the date and time components
   const year = date.getFullYear();
@@ -88,7 +82,6 @@ export const checkIfImage = (url, callback) => {
 };
 
 // Function to request OTP generation
-// Adjusted function to handle an array of emails
 export const generateOTP = async (emails) => {
   try {
     const response = await fetch("http://localhost:3001/send-otp", {

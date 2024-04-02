@@ -58,15 +58,13 @@ const Analytics = () => {
         Header: "End Time",
         accessor: "endTime",
       },
-      // Define other columns as needed
     ],
     []
   );
 
-  const voterParticipationData = instances; // Replace this with actual data
-  const voterByOrgData = instances; // Replace this with actual data
+  const voterParticipationData = instances;
+  const voterByOrgData = instances;
 
-  // Analytics.js or wherever this component is used
   return (
     <div className="bg-[#1c1c24] p-5 rounded-lg space-y-6">
       <h2 className="text-xl font-bold text-white">Voting Analytics</h2>

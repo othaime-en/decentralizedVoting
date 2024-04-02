@@ -17,11 +17,9 @@ import { thirdweb } from "../assets";
 const CampaignDetails = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const { donate, getDonations, contract, address, getCandidates, vote } =
-    useStateContext();
+  const { contract, address, getCandidates, vote } = useStateContext();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [amount, setAmount] = useState("");
   const [candidates, setCandidates] = useState([]);
   const [selectedCandidateId, setSelectedCandidateId] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
