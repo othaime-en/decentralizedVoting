@@ -3,17 +3,16 @@
 This document tracks the progress of improvements to the Devote decentralized voting application. It serves as our project memory to help with future tasks.
 
 ## Completed Tasks
-- [ ] *None yet*
+- [x] Remove hardcoded credentials from server.js
+- [x] Create documentation for environment variables setup
+- [x] Add dotenv package to email server
 
 ## In Progress Tasks
-- [ ] Create environment variables setup for email server credentials
+- [ ] Implement input validation and sanitization
 
 ## To Do Tasks
 
 ### Phase 1: Security & Fundamentals
-- [ ] Remove hardcoded credentials from server.js
-- [ ] Create `.env` file for environment variables
-- [ ] Implement input validation and sanitization
 - [ ] Add CSRF protection to the email server
 - [ ] Set up proper error handling and logging structure
 - [ ] Set up TypeScript conversion scaffolding
@@ -85,7 +84,7 @@ This document tracks the progress of improvements to the Devote decentralized vo
 ## Prioritized Tasks for Immediate Implementation
 
 1. **Critical Security**
-   - [ ] Remove hardcoded credentials from server.js
+   - [x] Remove hardcoded credentials from server.js
    - [ ] Implement input validation
 
 2. **Quick Wins**
@@ -100,4 +99,8 @@ This document tracks the progress of improvements to the Devote decentralized vo
 
 ## Notes and References
 
-*This section will contain notes about implementation decisions and references to relevant files as tasks are completed.* 
+### 2023-11-20: Environment Variables Implementation
+- Modified `emailserver/server.js` to use environment variables instead of hardcoded credentials
+- Added dotenv package to the email server for environment variable loading
+- Created documentation in `emailserver/README.md` with instructions on setting up the .env file
+- The server now checks if email credentials are set and provides a warning if they're missing 

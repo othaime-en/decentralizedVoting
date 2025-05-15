@@ -1,25 +1,27 @@
+require("dotenv").config();
 const express = require("express");
 const nodemailer = require("nodemailer");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3001;
 
 app.use(bodyParser.json());
 app.use(cors());
 
+// Email configuration from environment variables
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  service: process.env.EMAIL_SERVICE || "gmail",
   auth: {
-    user: "othaimeen97@gmail.com",
-    pass: "amvl jmzn owrk akuu",
+    user: process.env.EMAIL_USER || "your_email@example.com",
+    pass: process.env.EMAIL_PASSWORD || "your_app_password",
   },
 });
 
 const otpStorage = {};
 
-const OTP_EXPIRATION_TIME = 120 * 60 * 1000;
+const OTP_EXPIRATION_TIME = parseInt(process.env.OTP_EXPIRATION_TIME) || 120 * 60 * 1000;
 
 // Generate and send OTP
 app.post("/send-otp", (req, res) => {
@@ -33,7 +35,7 @@ app.post("/send-otp", (req, res) => {
     otpStorage[otp] = { email, timestamp: new Date() };
 
     const mailOptions = {
-      from: "othaimeen97@gmail.com",
+      from: process.env.EMAIL_USER || "your_email@example.com",
       to: email,
       subject: "Your Voting OTP",
       text:
@@ -79,4 +81,10 @@ app.post("/verify-otp", (req, res) => {
 
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
+  
+  // Check if environment variables are set
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+    console.warn("WARNING: Email credentials not set in environment variables.");
+    console.warn("Please create a .env file with EMAIL_USER and EMAIL_PASSWORD.");
+  }
 });
