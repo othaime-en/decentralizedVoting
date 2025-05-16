@@ -34,10 +34,65 @@ This is the email server for the Devote application. It handles sending and veri
 - **URL**: `/send-otp`
 - **Method**: `POST`
 - **Body**: `{ "emails": ["user1@example.com", "user2@example.com"] }`
-- **Response**: `OTP sent successfully to all provided emails`
+- **Validation**:
+  - Emails array must contain at least one email
+  - Each email must be in a valid format
+- **Response**: 
+  ```json
+  {
+    "message": "OTP processing completed",
+    "sent": ["user1@example.com"],
+    "failed": [{"email": "user2@example.com", "error": "Error message"}]
+  }
+  ```
+- **Error Response**:
+  ```json
+  {
+    "errors": [
+      {
+        "type": "field",
+        "msg": "Invalid email format",
+        "path": "emails[0]",
+        "location": "body"
+      }
+    ]
+  }
+  ```
 
 ### Verify OTP
 - **URL**: `/verify-otp`
 - **Method**: `POST`
 - **Body**: `{ "otp": "123456" }`
-- **Response**: `OTP verified successfully` 
+- **Validation**:
+  - OTP is required
+  - OTP must be a 6-digit numeric string
+- **Success Response**: 
+  ```json
+  {
+    "message": "OTP verified successfully"
+  }
+  ```
+- **Error Response**:
+  ```json
+  {
+    "message": "Invalid OTP"
+  }
+  ```
+  or
+  ```json
+  {
+    "message": "OTP has expired"
+  }
+  ```
+  or validation errors in the format shown above
+
+### Health Check
+- **URL**: `/health`
+- **Method**: `GET`
+- **Response**:
+  ```json
+  {
+    "status": "ok",
+    "timestamp": "2023-11-20T12:34:56.789Z"
+  }
+  ``` 

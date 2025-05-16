@@ -6,6 +6,8 @@ This document tracks the progress of improvements to the Devote decentralized vo
 - [x] Remove hardcoded credentials from server.js
 - [x] Create documentation for environment variables setup
 - [x] Add dotenv package to email server
+- [x] Implement input validation and sanitization
+- [x] Add health check endpoint
 
 ## In Progress Tasks
 - [ ] Implement input validation and sanitization
@@ -85,7 +87,7 @@ This document tracks the progress of improvements to the Devote decentralized vo
 
 1. **Critical Security**
    - [x] Remove hardcoded credentials from server.js
-   - [ ] Implement input validation
+   - [x] Implement input validation
 
 2. **Quick Wins**
    - [ ] Add loading states in UI
@@ -103,4 +105,13 @@ This document tracks the progress of improvements to the Devote decentralized vo
 - Modified `emailserver/server.js` to use environment variables instead of hardcoded credentials
 - Added dotenv package to the email server for environment variable loading
 - Created documentation in `emailserver/README.md` with instructions on setting up the .env file
-- The server now checks if email credentials are set and provides a warning if they're missing 
+- The server now checks if email credentials are set and provides a warning if they're missing
+
+### 2023-11-20: Input Validation Implementation
+- Added express-validator package for input validation
+- Implemented validation for email format in the send-otp endpoint
+- Added validation for OTP format and length in the verify-otp endpoint
+- Created a reusable validation error handler middleware
+- Updated API responses to return structured JSON with appropriate HTTP status codes
+- Added a health check endpoint for monitoring
+- Updated API documentation in README.md to reflect the new validation rules and response formats 
