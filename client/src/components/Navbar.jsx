@@ -37,7 +37,7 @@ const Navbar = () => {
           styles={address ? "bg-[#1dc071]" : "bg-[#8c6dfd]"}
           handleClick={() => {
             if (address) navigate("create-instance");
-            else connect(); // remember to change to the latest connectWallet
+            else connect();
           }}
         />
 
