@@ -1,10 +1,23 @@
 import React from 'react'
+import { useTheme } from '../context/ThemeContext'
 
 const FormField = ({ labelName, placeholder, inputType, isTextArea, value, handleChange }) => {
+  const { isDarkMode } = useTheme();
+  
+  const inputClasses = `py-[15px] sm:px-[25px] px-[15px] outline-none border-[1px] bg-transparent font-epilogue text-[14px] rounded-[10px] sm:min-w-[300px] transition-colors duration-300 ${
+    isDarkMode 
+      ? 'border-[#3a3a43] text-white placeholder:text-[#4b5264]' 
+      : 'border-gray-200 text-gray-900 placeholder:text-gray-500'
+  }`;
+
   return (
     <label className="flex-1 w-full flex flex-col">
       {labelName && (
-        <span className="font-epilogue font-medium text-[14px] leading-[22px] text-[#808191] mb-[10px]">{labelName}</span>
+        <span className={`font-epilogue font-medium text-[14px] leading-[22px] mb-[10px] transition-colors duration-300 ${
+          isDarkMode ? 'text-[#808191]' : 'text-gray-600'
+        }`}>
+          {labelName}
+        </span>
       )}
       {isTextArea ? (
         <textarea 
@@ -13,7 +26,7 @@ const FormField = ({ labelName, placeholder, inputType, isTextArea, value, handl
           onChange={handleChange}
           rows={10}
           placeholder={placeholder}
-          className="py-[15px] sm:px-[25px] px-[15px] outline-none border-[1px] border-[#3a3a43] bg-transparent font-epilogue text-white text-[14px] placeholder:text-[#4b5264] rounded-[10px] sm:min-w-[300px]"
+          className={inputClasses}
         />
       ) : (
         <input 
@@ -23,7 +36,7 @@ const FormField = ({ labelName, placeholder, inputType, isTextArea, value, handl
           type={inputType}
           step="0.1"
           placeholder={placeholder}
-          className="py-[15px] sm:px-[25px] px-[15px] outline-none border-[1px] border-[#3a3a43] bg-transparent font-epilogue text-white text-[14px] placeholder:text-[#4b5264] rounded-[10px] sm:min-w-[300px]"
+          className={inputClasses}
         />
       )}
     </label>

@@ -1,16 +1,14 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { CustomButton, FormField, Loader, StatusModal } from "../components";
+import { generateOTP } from "../utils";
 import { useStateContext } from "../context";
-import { CustomButton, FormField, Loader } from "../components";
-import { checkIfImage } from "../utils";
-import { StatusModal } from "../components";
+import { useTheme } from '../context/ThemeContext';
 
 const CreateInstance = () => {
   const navigate = useNavigate();
-  const { createInstance } = useStateContext();
+  const { createNewInstance, addCandidates } = useStateContext();
   const [isLoading, setIsLoading] = useState(false);
-  const [instanceId, setInstanceId] = useState(null);
   const [form, setForm] = useState({
     instanceName: "",
     organizationName: "",
@@ -28,229 +26,243 @@ const CreateInstance = () => {
   const [emailInput, setEmailInput] = useState("");
   const [emails, setEmails] = useState([]);
   const fileInputRef = useRef(null);
+  const { isDarkMode } = useTheme();
 
-  const handleFormFieldChange = (fieldName, e) => {
-    setForm({ ...form, [fieldName]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    setIsLoading(true);
-
-    try {
-      const data = await createInstance({
-        ...form,
-        candidates,
-        emails,
-      });
-
-      setInstanceId(data);
-      setIsStatusModalOpen(true);
-      setModalInfo({
-        title: "Success!",
-        message: "Your instance has been created successfully.",
-        status: "confirmation",
-      });
-    } catch (error) {
-      console.error("Error creating instance:", error);
-      setIsStatusModalOpen(true);
-      setModalInfo({
-        title: "Error",
-        message: "Failed to create instance. Please try again.",
-        status: "error",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCandidateChange = (index, field, value) => {
-    const newCandidates = [...candidates];
-    newCandidates[index][field] = value;
-    setCandidates(newCandidates);
-  };
-
-  const addCandidate = () => {
-    setCandidates([...candidates, { name: "", role: "", description: "" }]);
-  };
-
-  const removeCandidate = (index) => {
-    const newCandidates = candidates.filter((_, i) => i !== index);
-    setCandidates(newCandidates);
+  const showStatusModal = (title, message, status) => {
+    setModalInfo({ title, message, status });
+    setIsStatusModalOpen(true);
   };
 
   const handleEmailInputChange = (e) => {
     setEmailInput(e.target.value);
   };
 
-  const addEmail = () => {
-    if (emailInput && /\S+@\S+\.\S+/.test(emailInput)) {
-      setEmails([...emails, emailInput.trim()]);
-      setEmailInput("");
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const text = await file.text();
+      const lines = text.split(/\r?\n/);
+      const fileEmails = lines
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
+      setEmails([...emails, ...fileEmails]);
     }
   };
 
-  const removeEmail = (index) => {
-    const newEmails = emails.filter((_, i) => i !== index);
-    setEmails(newEmails);
+  const validateEmails = (emailList) => {
+    const emailRegex =
+      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+    const uniqueEmails = Array.from(new Set(emailList));
+    const validEmails = uniqueEmails.filter((email) => emailRegex.test(email));
+    const invalidEmails = uniqueEmails.filter(
+      (email) => !emailRegex.test(email)
+    );
+
+    if (invalidEmails.length > 0) {
+      throw new Error("Invalid emails detected");
+    }
+
+    return validEmails;
   };
 
-  const handleModalClose = () => {
-    setIsStatusModalOpen(false);
-    if (modalInfo.status === "confirmation") {
-      navigate("/");
+  const handleInstanceFieldChange = (fieldName, e) => {
+    setForm({ ...form, [fieldName]: e.target.value });
+  };
+
+  const handleCandidateFieldChange = (fieldName, e, index) => {
+    const updatedCandidates = candidates.map((candidate, idx) => {
+      if (idx === index) {
+        return { ...candidate, [fieldName]: e.target.value };
+      }
+      return candidate;
+    });
+    setCandidates(updatedCandidates);
+  };
+
+  const handleAddCandidate = () => {
+    const newCandidate = { name: "", role: "", description: "" };
+    setCandidates([...candidates, newCandidate]);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      // Validate emails first
+      const combinedEmails = [
+        ...emails,
+        ...emailInput.split(/\s*,\s*/).filter((email) => email.trim()),
+      ];
+
+      if (combinedEmails.length === 0) {
+        throw new Error("Please enter emails or upload a file.");
+      }
+
+      const validEmails = validateEmails(combinedEmails);
+
+      // Create instance and add candidates in one transaction
+      const instanceId = await createNewInstance(
+        form.instanceName,
+        form.organizationName,
+        form.description,
+        candidates // Pass candidates directly to be handled in the same transaction
+      );
+
+      // If instance creation and candidate addition was successful, send OTPs
+      generateOTP(validEmails);
+
+      setIsLoading(false);
+      showStatusModal(
+        "Success",
+        "Voting instance created and invitations sent successfully",
+        "confirmation"
+      );
+      
+      // Navigate to profile or instance details
+      navigate("/profile");
+    } catch (error) {
+      console.error(error);
+      setIsLoading(false);
+      showStatusModal(
+        "Error",
+        error.message || "Failed to create voting instance",
+        "error"
+      );
     }
   };
 
   return (
-    <div className="bg-[#1c1c24] flex justify-center items-center flex-col rounded-[10px] sm:p-10 p-4">
+    <div className={`flex justify-center items-center flex-col rounded-[10px] sm:p-10 p-4 transition-colors duration-300 ${
+      isDarkMode ? 'bg-[#1c1c24]' : 'bg-white shadow-lg'
+    }`}>
       {isLoading && <Loader />}
-
-      <div className="flex justify-center items-center p-[16px] sm:min-w-[380px] bg-[#3a3a43] rounded-[10px]">
-        <h1 className="font-epilogue font-bold sm:text-[25px] text-[18px] leading-[38px] text-white">
-          Create a New Instance
-        </h1>
-      </div>
-
-      <form
-        onSubmit={handleSubmit}
-        className="w-full mt-[65px] flex flex-col gap-[30px]"
-      >
+      <form onSubmit={handleSubmit} className="w-full mt-[20px] flex flex-col gap-[30px]">
+        {/* Instance Details Section */}
+        <div className="w-full bg-[#8c6dfd] text-white text-center py-[10px] rounded-[10px]">
+          <h2 className="font-epilogue font-bold">Create a Voting Instance</h2>
+        </div>
+        
         <div className="flex flex-wrap gap-[40px]">
           <FormField
             labelName="Instance Name *"
-            placeholder="Write your instance name"
+            placeholder="Instance Name"
             inputType="text"
             value={form.instanceName}
-            handleChange={(e) => handleFormFieldChange("instanceName", e)}
+            handleChange={(e) => handleInstanceFieldChange("instanceName", e)}
           />
           <FormField
             labelName="Organization Name *"
-            placeholder="Write your organization name"
+            placeholder="Organization Name"
             inputType="text"
             value={form.organizationName}
-            handleChange={(e) => handleFormFieldChange("organizationName", e)}
+            handleChange={(e) =>
+              handleInstanceFieldChange("organizationName", e)
+            }
           />
         </div>
-
+        
         <FormField
           labelName="Description *"
-          placeholder="Write your description"
-          isTextArea
+          placeholder="Describe the voting instance"
+          isTextArea={true}
           value={form.description}
-          handleChange={(e) => handleFormFieldChange("description", e)}
+          handleChange={(e) => handleInstanceFieldChange("description", e)}
         />
 
-        <div className="flex flex-col gap-[30px]">
-          <h3 className="font-epilogue font-bold text-[18px] text-white">
-            Candidates
-          </h3>
-          {candidates.map((candidate, index) => (
-            <div key={index} className="flex flex-col gap-[15px]">
-              <div className="flex justify-between items-center">
-                <h4 className="font-epilogue font-semibold text-[16px] text-white">
-                  Candidate {index + 1}
-                </h4>
-                {candidates.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeCandidate(index)}
-                    className="text-red-500"
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
+        {/* Candidate Details Section */}
+        <div className="w-full bg-[#8c6dfd] text-white text-center py-[10px] rounded-[10px] mt-[20px]">
+          <h2 className="font-epilogue font-bold">Add Candidate Details</h2>
+        </div>
+
+        {candidates.map((candidate, index) => (
+          <div key={index}>
+            <div className="flex flex-wrap gap-[40px]">
               <FormField
-                labelName="Name *"
-                placeholder="Candidate name"
+                labelName="Candidate Name *"
+                placeholder="Candidate Name"
                 inputType="text"
                 value={candidate.name}
                 handleChange={(e) =>
-                  handleCandidateChange(index, "name", e.target.value)
+                  handleCandidateFieldChange("name", e, index)
                 }
               />
               <FormField
-                labelName="Role *"
-                placeholder="Candidate role"
+                labelName="Candidate Role *"
+                placeholder="Candidate Role"
                 inputType="text"
                 value={candidate.role}
                 handleChange={(e) =>
-                  handleCandidateChange(index, "role", e.target.value)
-                }
-              />
-              <FormField
-                labelName="Description"
-                placeholder="Candidate description"
-                isTextArea
-                value={candidate.description}
-                handleChange={(e) =>
-                  handleCandidateChange(index, "description", e.target.value)
+                  handleCandidateFieldChange("role", e, index)
                 }
               />
             </div>
-          ))}
-          <button
-            type="button"
-            onClick={addCandidate}
-            className="bg-[#1dc071] text-white px-4 py-2 rounded"
-          >
-            Add Candidate
-          </button>
-        </div>
-
-        <div className="flex flex-col gap-[30px]">
-          <h3 className="font-epilogue font-bold text-[18px] text-white">
-            Voters
-          </h3>
-          <div className="flex gap-[15px]">
             <FormField
-              labelName="Email"
-              placeholder="Enter voter email"
-              inputType="email"
-              value={emailInput}
-              handleChange={handleEmailInputChange}
+              labelName="Candidate Description *"
+              placeholder="Describe the candidate"
+              isTextArea={true}
+              value={candidate.description}
+              handleChange={(e) =>
+                handleCandidateFieldChange("description", e, index)
+              }
             />
-            <button
-              type="button"
-              onClick={addEmail}
-              className="bg-[#1dc071] text-white px-4 py-2 rounded mt-[24px]"
-            >
-              Add Email
-            </button>
           </div>
-          <div className="flex flex-wrap gap-[10px]">
-            {emails.map((email, index) => (
-              <div
-                key={index}
-                className="bg-[#28282e] text-white px-3 py-1 rounded flex items-center gap-[5px]"
-              >
-                <span>{email}</span>
-                <button
-                  type="button"
-                  onClick={() => removeEmail(index)}
-                  className="text-red-500 ml-2"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
+        ))}
+
+        <div className="flex justify-end">
+          <CustomButton
+            btnType="button"
+            title="Add another candidate"
+            styles="bg-[#1dc071]"
+            handleClick={handleAddCandidate}
+          />
         </div>
 
-        <div className="flex justify-center items-center mt-[40px]">
+        {/* Voter Emails Section */}
+        <div className="w-full bg-[#8c6dfd] text-white text-center py-[10px] rounded-[10px] mt-[20px]">
+          <h2 className="font-epilogue font-bold">Add Voters</h2>
+        </div>
+
+        <FormField
+          labelName="Emails"
+          placeholder="Enter emails separated by commas"
+          isTextArea={true}
+          value={emailInput}
+          handleChange={handleEmailInputChange}
+        />
+
+        <div className="flex-1 w-full flex flex-col">
+          <span className={`font-epilogue font-medium text-[14px] leading-[22px] mb-[10px] transition-colors duration-300 ${
+            isDarkMode ? 'text-[#808191]' : 'text-gray-600'
+          }`}>
+            Upload email list (.csv, .txt)
+          </span>
+          <input
+            type="file"
+            onChange={handleFileChange}
+            accept=".csv, .txt"
+            className={`py-[15px] sm:px-[25px] px-[15px] outline-none border-[1px] font-epilogue text-[14px] rounded-[10px] sm:min-w-[300px] cursor-pointer transition-colors duration-300 ${
+              isDarkMode 
+                ? 'border-[#3a3a43] bg-transparent text-white placeholder:text-[#4b5264]' 
+                : 'border-gray-200 bg-transparent text-gray-900 placeholder:text-gray-500'
+            }`}
+          />
+        </div>
+
+        {/* Submit Button */}
+        <div className="flex justify-center items-center mt-[20px]">
           <CustomButton
             btnType="submit"
-            title="Submit new instance"
-            styles="bg-[#1dc071]"
+            title="Create Instance & Send Invitations"
+            styles="bg-[#4caf50]"
           />
         </div>
       </form>
 
       <StatusModal
         isOpen={isStatusModalOpen}
-        onClose={handleModalClose}
+        onClose={() => setIsStatusModalOpen(false)}
         title={modalInfo.title}
         message={modalInfo.message}
         status={modalInfo.status}

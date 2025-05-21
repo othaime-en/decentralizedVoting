@@ -15,14 +15,20 @@ const Navbar = () => {
 
   return (
     <div className="flex md:flex-row flex-col-reverse justify-between mt-[20px] mb-[35px] gap-6">
-      <div className="lg:flex-1 flex flex-row max-w-[458px] py-2 pl-4 pr-2 h-[52px] bg-[#1c1c24] rounded-[100px]">
+      <div className={`lg:flex-1 flex flex-row max-w-[458px] py-2 pl-4 pr-2 h-[52px] rounded-[100px] transition-colors duration-300 ${
+        isDarkMode ? 'bg-[#1c1c24]' : 'bg-white border border-gray-200'
+      }`}>
         <input
           type="text"
           placeholder="Search for Instances"
-          className="flex w-full font-epilogue font-normal text-[14px] placeholder:text-[#4b5264] text-white bg-transparent outline-none"
+          className={`flex w-full font-epilogue font-normal text-[14px] bg-transparent outline-none transition-colors duration-300 ${
+            isDarkMode 
+              ? 'placeholder:text-[#4b5264] text-white' 
+              : 'placeholder:text-gray-500 text-gray-900'
+          }`}
         />
 
-        <div className="w-[72px] h-full rounded-[20px] bg-[#4acd8d] flex justify-center items-center cursor-pointer">
+        <div className="w-[72px] h-full rounded-[20px] bg-[#4acd8d] flex justify-center items-center cursor-pointer hover:bg-[#45b87e] transition-colors duration-300">
           <img
             src={search}
             alt="search"
@@ -35,7 +41,7 @@ const Navbar = () => {
         <CustomButton
           btnType="button"
           title={address ? "Create an instance" : "Connect"}
-          styles={address ? "bg-[#1dc071]" : "bg-[#8c6dfd]"}
+          styles={address ? "bg-[#1dc071] hover:bg-[#1ab069] transition-colors duration-300" : "bg-[#8c6dfd] hover:bg-[#7b5df8] transition-colors duration-300"}
           handleClick={() => {
             if (address) navigate("create-instance");
             else connect();
@@ -43,7 +49,9 @@ const Navbar = () => {
         />
 
         <Link to="/profile">
-          <div className="w-[52px] h-[52px] rounded-full bg-[#2c2f32] flex justify-center items-center cursor-pointer">
+          <div className={`w-[52px] h-[52px] rounded-full flex justify-center items-center cursor-pointer transition-colors duration-300 ${
+            isDarkMode ? 'bg-[#2c2f32] hover:bg-[#3a3a43]' : 'bg-gray-100 hover:bg-gray-200'
+          }`}>
             <img
               src={thirdweb}
               alt="user"
@@ -55,7 +63,9 @@ const Navbar = () => {
 
       {/* Small screen navigation */}
       <div className="sm:hidden flex justify-between items-center relative">
-        <div className="w-[40px] h-[40px] rounded-[10px] bg-[#2c2f32] flex justify-center items-center cursor-pointer">
+        <div className={`w-[40px] h-[40px] rounded-[10px] flex justify-center items-center cursor-pointer transition-colors duration-300 ${
+          isDarkMode ? 'bg-[#2c2f32] hover:bg-[#3a3a43]' : 'bg-gray-100 hover:bg-gray-200'
+        }`}>
           <img
             src={logo}
             alt="user"
@@ -71,16 +81,18 @@ const Navbar = () => {
         />
 
         <div
-          className={`absolute top-[60px] right-0 left-0 bg-[#1c1c24] z-10 shadow-secondary py-4 ${
+          className={`absolute top-[60px] right-0 left-0 z-10 shadow-secondary py-4 transition-all duration-700 ${
+            isDarkMode ? 'bg-[#1c1c24]' : 'bg-white border border-gray-200'
+          } ${
             !toggleDrawer ? "-translate-y-[100vh]" : "translate-y-0"
-          } transition-all duration-700`}
+          }`}
         >
           <ul className="mb-4">
             {navlinks.map((link) => (
               <li
                 key={link.name}
-                className={`flex p-4 ${
-                  isActive === link.name && "bg-[#3a3a43]"
+                className={`flex p-4 transition-colors duration-300 ${
+                  isActive === link.name && (isDarkMode ? 'bg-[#3a3a43]' : 'bg-gray-100')
                 }`}
                 onClick={() => {
                   setIsActive(link.name);
@@ -97,7 +109,9 @@ const Navbar = () => {
                 />
                 <p
                   className={`ml-[20px] font-epilogue font-semibold text-[14px] ${
-                    isActive === link.name ? "text-[#1dc071]" : "text-[#808191]"
+                    isActive === link.name 
+                      ? 'text-[#1dc071]' 
+                      : (isDarkMode ? 'text-[#808191]' : 'text-gray-600')
                   }`}
                 >
                   {link.name}
@@ -110,7 +124,10 @@ const Navbar = () => {
             <CustomButton
               btnType="button"
               title={address ? "Create an instance" : "Connect"}
-              styles={address ? "bg-[#1dc071]" : "bg-[#8c6dfd]"}
+              styles={address 
+                ? "bg-[#1dc071] hover:bg-[#1ab069] transition-colors duration-300" 
+                : "bg-[#8c6dfd] hover:bg-[#7b5df8] transition-colors duration-300"
+              }
               handleClick={() => {
                 if (address) navigate("create-campaign");
                 else connect();
