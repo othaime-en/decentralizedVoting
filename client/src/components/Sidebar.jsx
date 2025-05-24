@@ -4,31 +4,41 @@ import { logo, sun, moon } from '../assets';
 import { navlinks } from '../constants';
 import { useTheme } from '../context/ThemeContext';
 
-const Icon = ({ styles, name, imgUrl, isActive, disabled, handleClick, label, isExpanded }) => {
+const Icon = ({ styles, name, imgUrl, isActive, disabled, handleClick, label, isExpanded, link }) => {
   const { isDarkMode } = useTheme();
+  const navigate = useNavigate();
   
-  return (
+  const handleIconClick = (e) => {
+    if (disabled) return;
+    if (link) {
+      navigate(link);
+    } else if (handleClick) {
+      handleClick(e);
+    }
+  };
+  
+  const content = (
     <div 
       className={[
         'flex items-center gap-4 w-full px-3 py-2 rounded-lg transition-all duration-300 ease-in-out',
-        isActive && isActive === name ? (isDarkMode ? 'bg-[#2c2f32]' : 'bg-gray-200') : 
+        isActive ? (isDarkMode ? 'bg-[#2c2f32]' : 'bg-gray-200') : 
           isDarkMode ? 'hover:bg-[#2c2f32]/50' : 'hover:bg-gray-100',
         !disabled && 'cursor-pointer',
         styles
       ].filter(Boolean).join(' ')}
-      onClick={handleClick}
+      onClick={handleIconClick}
     >
       <div className="min-w-[32px] h-[32px] flex items-center justify-center">
         <img 
           src={imgUrl} 
           alt={name}
-          className={`w-5 h-5 transition-all duration-300 ${isActive !== name && 'grayscale opacity-60'}`}
+          className={`w-5 h-5 transition-all duration-300 ${!isActive && 'grayscale opacity-60'}`}
         />
       </div>
       {isExpanded && (
         <span 
           className={`whitespace-nowrap text-sm transition-all duration-300 ${
-            isActive === name 
+            isActive 
               ? (isDarkMode ? 'text-white' : 'text-gray-900')
               : (isDarkMode ? 'text-gray-400' : 'text-gray-600')
           }`}
@@ -38,13 +48,23 @@ const Icon = ({ styles, name, imgUrl, isActive, disabled, handleClick, label, is
       )}
     </div>
   );
+  
+  return content;
 };
 
 const Sidebar = () => {
   const navigate = useNavigate();
-  const [isActive, setIsActive] = useState('dashboard');
+  const location = window.location.pathname;
   const [isExpanded, setIsExpanded] = useState(false);
   const { isDarkMode, toggleTheme } = useTheme();
+  
+  // Get the current active route based on the URL
+  const getActiveRoute = (path) => {
+    const currentPath = location.split('/').pop();
+    if (path === '/app/home' && (currentPath === 'home' || currentPath === '')) return true;
+    if (path.endsWith(currentPath)) return true;
+    return false;
+  };
 
   return (
     <div 
@@ -55,14 +75,23 @@ const Sidebar = () => {
       onMouseEnter={() => setIsExpanded(true)}
       onMouseLeave={() => setIsExpanded(false)}
     >
-      <Link to="/" className="mb-8 px-3">
-        <Icon 
-          styles={isDarkMode ? '!bg-[#2c2f32] rounded-xl' : '!bg-gray-200 rounded-xl'}
-          imgUrl={logo} 
-          isExpanded={isExpanded}
-          label="Devote"
-        />
-      </Link>
+      <div className="mb-8 px-3">
+        <Link to="/" className="flex items-center gap-2">
+          <div className={`${isDarkMode ? '!bg-[#2c2f32]' : '!bg-gray-200'} rounded-xl p-2`}>
+            <img 
+              src={logo} 
+              alt="Devote Logo" 
+              className="w-8 h-8"
+              style={{ filter: 'hue-rotate(90deg) saturate(2)' }}
+            />
+          </div>
+          {isExpanded && (
+            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#8c6dfd] to-[#4caf50]">
+              Devote
+            </span>
+          )}
+        </Link>
+      </div>
 
       <div 
         className={[
@@ -73,19 +102,17 @@ const Sidebar = () => {
       >
         <div className="flex-1 flex flex-col gap-2 px-3">
           {navlinks.map((link) => (
-            <Icon 
-              key={link.name}
-              {...link}
-              isActive={isActive}
-              isExpanded={isExpanded}
-              label={link.name.charAt(0).toUpperCase() + link.name.slice(1)}
-              handleClick={() => {
-                if(!link.disabled) {
-                  setIsActive(link.name);
-                  navigate(link.link);
-                }
-              }}
-            />
+            <div key={link.name} className="w-full">
+              <Icon 
+                name={link.name}
+                imgUrl={link.imgUrl}
+                isActive={getActiveRoute(link.link)}
+                isExpanded={isExpanded}
+                label={link.name.charAt(0).toUpperCase() + link.name.slice(1)}
+                link={link.link}
+                disabled={link.disabled}
+              />
+            </div>
           ))}
         </div>
 
