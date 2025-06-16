@@ -3,31 +3,41 @@ import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import FundCard from "./FundCard";
 import { loader } from "../assets";
+import { useTheme } from '../context/ThemeContext';
 
 const DisplayUserInstances = ({ title, isLoading, instances }) => {
   const navigate = useNavigate();
+  const { isDarkMode } = useTheme();
 
   const handleNavigate = (instance) => {
     navigate(`/instance-config/${instance.title}`, { state: instance });
   };
 
   return (
-    <div>
-      <h1 className="font-epilogue font-semibold text-[18px] text-white text-left">
+    <div className={`transition-colors duration-300 ${
+      isDarkMode ? 'text-white' : 'text-gray-900'
+    }`}>
+      <h1 className={`font-epilogue font-semibold text-[18px] text-left mb-6 ${
+        isDarkMode ? 'text-white' : 'text-gray-900'
+      }`}>
         {title} ({instances.length})
       </h1>
 
-      <div className="flex flex-wrap mt-[20px] gap-[26px]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-fr">
         {isLoading && (
-          <img
-            src={loader}
-            alt="loader"
-            className="w-[100px] h-[100px] object-contain"
-          />
+          <div className="col-span-full flex justify-center">
+            <img
+              src={loader}
+              alt="loader"
+              className="w-[100px] h-[100px] object-contain"
+            />
+          </div>
         )}
 
         {!isLoading && instances.length === 0 && (
-          <p className="font-epilogue font-semibold text-[14px] leading-[30px] text-[#818183]">
+          <p className={`col-span-full font-epilogue font-semibold text-[14px] leading-[30px] ${
+            isDarkMode ? 'text-[#818183]' : 'text-gray-500'
+          }`}>
             You have not created any voting instances yet
           </p>
         )}
@@ -35,11 +45,12 @@ const DisplayUserInstances = ({ title, isLoading, instances }) => {
         {!isLoading &&
           instances.length > 0 &&
           instances.map((instance) => (
-            <FundCard
-              key={uuidv4()}
-              {...instance}
-              handleClick={() => handleNavigate(instance)}
-            />
+            <div key={uuidv4()} className="h-full">
+              <FundCard
+                {...instance}
+                handleClick={() => handleNavigate(instance)}
+              />
+            </div>
           ))}
       </div>
     </div>
