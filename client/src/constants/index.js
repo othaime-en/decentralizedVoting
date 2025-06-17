@@ -4,22 +4,22 @@ export const navlinks = [
   {
     name: "dashboard",
     imgUrl: dashboard,
-    link: "/",
+    link: "/app/home",
   },
   {
     name: "create instance",
     imgUrl: payment,
-    link: "/create-instance",
+    link: "/app/create-instance",
   },
   {
     name: "analytics",
     imgUrl: withdraw,
-    link: "/analytics",
+    link: "/app/analytics",
   },
   {
     name: "profile",
     imgUrl: profile,
-    link: "/profile",
+    link: "/app/profile",
   },
   {
     name: "logout",
